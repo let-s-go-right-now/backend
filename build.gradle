@@ -5,7 +5,11 @@ plugins {
 }
 
 group = 'com.choi76'
-version = '0.0.1-SNAPSHOT'
+jar {
+	archiveBaseName = 'lets-go-right-now'
+	version = '0.0.1-SNAPSHOT'
+	enabled = false
+}
 
 java {
 	toolchain {
