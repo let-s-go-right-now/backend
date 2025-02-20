@@ -44,27 +44,21 @@ public class MemberService {
                 .body(ApiResponse.onSuccess("Bearer " + accessToken));
     }
 
+    /**
+     * 회원 가입
+     */
     public ResponseEntity<?> join(JoinReq joinReq) {
-
-        // 동일 username 사용자 생성 방지
-        if (memberRepository.existsMemberByEmail(joinReq.getEmail())) {
+        // 동일 사용자 생성 방지
+        if (memberRepository.existsMemberByEmail(joinReq.email())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(ApiResponse.onFailure(ErrorStatus._MEMBER_IS_EXISTS, "회원가입에 실패하였습니다."));
         }
 
-        // 새로운 회원 생성 - OAuth2 를 통한 회원가입을 수행할 경우 비밀번호는 저장하지 않아야함
-        Member member = Member.builder()
-                .email(joinReq.getEmail())
-                .password(passwordEncoder.encode(joinReq.getPassword())) // 암호화 후 저장
-                .role("ROLE_USER") // 사용자 권한 설정 접두사 ROLE 작성 필요
-                .build();
+        // 새로운 회원 생성
+        Member member = Member.toEntity(joinReq, passwordEncoder);
         memberRepository.save(member);
 
-        String accessToken = jwtUtil.createJwt(member.getEmail(), member.getRole());
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + accessToken);
-
-        return ResponseEntity.ok().headers(headers)
-                .body(ApiResponse.onSuccess("Bearer " + accessToken));
+        return ResponseEntity.ok()
+                .body(ApiResponse.onSuccess("회원 가입에 성공 하였습니다."));
     }
 }
