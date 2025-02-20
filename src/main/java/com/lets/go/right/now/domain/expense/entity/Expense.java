@@ -1,13 +1,17 @@
 package com.lets.go.right.now.domain.expense.entity;
 
 import com.lets.go.right.now.global.entity.BaseEntity;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.*;
 
 @Entity
@@ -17,10 +21,17 @@ import lombok.*;
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "Expense")
 public class Expense extends BaseEntity {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "expense_id")
     private Long id;
     private String expenseName; // 지출 이름
     private Integer price; // 지출 금액
     private LocalDate expenseDate; // 지출 날짜
+
+    // == 연관 관계 설정 == //
+    // 지출과 관련된 여행 사진
+    @Builder.Default
+    @OneToMany(mappedBy = "expense", cascade = CascadeType.ALL)
+    private List<TripImage> tripImages = new ArrayList<>();
 }
