@@ -2,15 +2,13 @@ package com.lets.go.right.now.domain.member.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
-import lombok.Builder;
-import lombok.Data;
 
-@Data
-@Builder
-public class LoginRequestDTO {
+public record LoinReq (
     @NotNull(message = "이메일 입력은 필수입니다.")
     @Email
-    private String email;
-    @NotNull(message = "패스워드 입력은 필수입니다.")
-    private String password;
+    String email,
+    @NotNull(message = "비밀번호 입력은 필수입니다.")
+    String password
+){
+
 }
