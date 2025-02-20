@@ -1,6 +1,7 @@
 package com.lets.go.right.now.domain.member.service;
 
 import com.lets.go.right.now.domain.member.dto.JoinReq;
+import com.lets.go.right.now.domain.member.dto.LoginRes;
 import com.lets.go.right.now.domain.member.dto.LoinReq;
 import com.lets.go.right.now.domain.member.entity.Member;
 import com.lets.go.right.now.domain.member.repository.MemberRepository;
@@ -40,7 +41,7 @@ public class MemberService {
         headers.set("Authorization", "Bearer " + accessToken); // JWT 발급 성공시 Header에 삽입하여 반환
 
         return ResponseEntity.ok().headers(headers)
-                .body(ApiResponse.onSuccess("Bearer " + accessToken));
+                .body(ApiResponse.onSuccess(LoginRes.of(member,accessToken)));
     }
 
     /**

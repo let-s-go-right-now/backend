@@ -1,7 +1,6 @@
 package com.lets.go.right.now.domain.member.controller;
 
 import com.lets.go.right.now.domain.member.dto.JoinReq;
-import com.lets.go.right.now.domain.member.dto.LoginRequestDTO;
 import com.lets.go.right.now.domain.member.dto.LoinReq;
 import com.lets.go.right.now.domain.member.service.MemberService;
 import jakarta.validation.Valid;
