@@ -1,8 +1,14 @@
 package com.lets.go.right.now.domain.member.entity;
 
+import com.lets.go.right.now.domain.expense.entity.ExcludedMember;
 import com.lets.go.right.now.domain.member.dto.JoinReq;
+import com.lets.go.right.now.domain.trip.entity.ScrappedTrip;
+import com.lets.go.right.now.domain.trip.entity.TripMember;
 import jakarta.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.*;
+import lombok.Builder.Default;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @Entity
@@ -24,7 +30,7 @@ public class Member {
     @Column(name = "profile_image_link")
     private String profileImgLink; // 프로필 이미지 링크 - S3
 
-    // == 편의 메소드 ==
+    // == 편의 메소드 == //
     public static Member toEntity(JoinReq joinReq, BCryptPasswordEncoder passwordEncoder) {
         return Member.builder()
                 .name(joinReq.name())
@@ -38,4 +44,22 @@ public class Member {
     public void changeProfileImgLink(String profileImgLink) {
         this.profileImgLink = profileImgLink;
     }
+
+    // == 연관 관계 설정 == //
+
+    // 내가 제외된 지출
+    @Builder.Default
+    @OneToMany(mappedBy = "excludedMember", cascade = CascadeType.ALL)
+    List<ExcludedMember> excludedMemberList = new ArrayList<>();
+
+    // 내가 참여 중인 여행
+    @Builder.Default
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    List<TripMember> tripList = new ArrayList<>();
+
+    // 내가 스크랩한 여행
+    @Builder.Default
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    List<ScrappedTrip> scrappedTripList = new ArrayList<>();
+
 }
