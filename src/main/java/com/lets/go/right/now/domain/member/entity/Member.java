@@ -2,6 +2,7 @@ package com.lets.go.right.now.domain.member.entity;
 
 import com.lets.go.right.now.domain.expense.entity.ExcludedMember;
 import com.lets.go.right.now.domain.member.dto.JoinReq;
+import com.lets.go.right.now.domain.trip.entity.ScrappedTrip;
 import com.lets.go.right.now.domain.trip.entity.TripMember;
 import jakarta.persistence.*;
 import java.util.ArrayList;
@@ -45,6 +46,8 @@ public class Member {
     }
 
     // == 연관 관계 설정 == //
+
+    // 내가 제외된 지출
     @Builder.Default
     @OneToMany(mappedBy = "excludedMember", cascade = CascadeType.ALL)
     List<ExcludedMember> excludedMemberList = new ArrayList<>();
@@ -53,5 +56,10 @@ public class Member {
     @Builder.Default
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     List<TripMember> tripList = new ArrayList<>();
+
+    // 내가 스크랩한 여행
+    @Builder.Default
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    List<ScrappedTrip> scrappedTripList = new ArrayList<>();
 
 }
