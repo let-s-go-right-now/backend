@@ -2,6 +2,7 @@ package com.lets.go.right.now.domain.member.controller;
 
 import com.lets.go.right.now.domain.member.dto.JoinReq;
 import com.lets.go.right.now.domain.member.dto.LoginRequestDTO;
+import com.lets.go.right.now.domain.member.dto.LoinReq;
 import com.lets.go.right.now.domain.member.service.MemberService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,8 +22,8 @@ public class MemberController {
      * 회원 로그인
      */
     @PostMapping("/login")
-    public ResponseEntity<?> login(@Valid @RequestBody LoginRequestDTO loginRequestDTO) {
-        return memberService.login(loginRequestDTO);
+    public ResponseEntity<?> login(@Valid @RequestBody LoinReq loinReq) {
+        return memberService.login(loinReq);
     }
 
     /**

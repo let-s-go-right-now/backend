@@ -1,7 +1,7 @@
 package com.lets.go.right.now.domain.member.service;
 
 import com.lets.go.right.now.domain.member.dto.JoinReq;
-import com.lets.go.right.now.domain.member.dto.LoginRequestDTO;
+import com.lets.go.right.now.domain.member.dto.LoinReq;
 import com.lets.go.right.now.domain.member.entity.Member;
 import com.lets.go.right.now.domain.member.repository.MemberRepository;
 import com.lets.go.right.now.global.enums.statuscode.ErrorStatus;
@@ -23,16 +23,15 @@ public class MemberService {
     private final BCryptPasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
-    // 로그인
+    /**
+     * 로그인
+     */
     @Transactional
-    public ResponseEntity<?> login(LoginRequestDTO dto) {
-        String email = dto.getEmail();
-        String password = dto.getPassword();
-        Member member = memberRepository.findMemberByEmail(email)
-                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
-
+    public ResponseEntity<?> login(LoinReq dto) {
+        // 회원 검증
+        Member member = memberRepository.getMemberByEmail(dto.email());
         // 비밀번호 검증
-        if(!passwordEncoder.matches(password, member.getPassword())) {
+        if(!passwordEncoder.matches(dto.password(), member.getPassword())) {
             throw new GeneralException(ErrorStatus.PASSWORD_NOT_CORRECT);
         }
 
