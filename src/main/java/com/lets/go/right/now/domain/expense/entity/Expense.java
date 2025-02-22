@@ -1,5 +1,6 @@
 package com.lets.go.right.now.domain.expense.entity;
 
+import com.lets.go.right.now.domain.member.entity.Member;
 import com.lets.go.right.now.global.entity.BaseEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -30,6 +31,7 @@ public class Expense extends BaseEntity {
     private Long id;
     private String expenseName; // 지출 이름
     private Integer price; // 지출 금액
+    private String details; // 상세 내역
     private LocalDate expenseDate; // 지출 날짜
 
     // == 연관 관계 설정 == //
@@ -41,4 +43,13 @@ public class Expense extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     private Category category;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "payer_id")
+    private Member payer; // 결제자
+
+    // 지출에 제외된 사람들
+    @Builder.Default
+    @OneToMany(mappedBy = "expense", cascade = CascadeType.ALL)
+    private List<ExcludedMember> excludedMemberList = new ArrayList<>();
 }
