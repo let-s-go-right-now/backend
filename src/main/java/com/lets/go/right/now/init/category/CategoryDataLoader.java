@@ -1,4 +1,4 @@
-package com.lets.go.right.now.init.tag;
+package com.lets.go.right.now.init.category;
 
 import com.lets.go.right.now.domain.expense.entity.Category;
 import com.lets.go.right.now.domain.expense.repository.CategoryRepository;
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 @Component
 @Order(1)
 @RequiredArgsConstructor
-public class TagDataLoader implements CommandLineRunner {
+public class CategoryDataLoader implements CommandLineRunner {
     private final CategoryRepository categoryRepository;
 
     @Override
