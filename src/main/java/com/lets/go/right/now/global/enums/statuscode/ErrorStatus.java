@@ -26,7 +26,14 @@ public enum ErrorStatus implements BaseCode {
 
 	// JWT Error
 	TOKEN_ERROR(HttpStatus.UNAUTHORIZED, "TOKEN4001", "토큰이 없거나 만료 되었습니다."),
-	TOKEN_NO_AUTHORIZATION(HttpStatus.UNAUTHORIZED, "TOKEN4002", "토큰에 권한이 없습니다.");
+	TOKEN_NO_AUTHORIZATION(HttpStatus.UNAUTHORIZED, "TOKEN4002", "토큰에 권한이 없습니다."),
+
+	// S3 Error
+	_S3_UPLOAD_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "S35001", "S3에 파일 업로드 중 오류가 발생했습니다."),
+	_S3_CLIENT_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "S35002", "S3 클라이언트 오류가 발생했습니다."),
+	_S3_FILE_PROCESSING_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "S35003", "파일 처리 중 오류가 발생했습니다."),
+	_S3_REMOVE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "S35004", "S3 파일 삭제 중 오류가 발생하였습니다.");
+
 
 	private final HttpStatus httpStatus;
 	private final String code;
