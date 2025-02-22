@@ -9,19 +9,23 @@ import com.lets.go.right.now.global.enums.statuscode.ErrorStatus;
 import com.lets.go.right.now.global.exception.GeneralException;
 import com.lets.go.right.now.global.jwt.util.JwtUtil;
 import com.lets.go.right.now.global.response.ApiResponse;
+import com.lets.go.right.now.global.s3.service.S3Service;
 import jakarta.transaction.Transactional;
+import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
 public class MemberServiceImpl implements MemberService{
     private final MemberRepository memberRepository;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final S3Service s3Service;
     private final JwtUtil jwtUtil;
 
     /**
@@ -48,7 +52,7 @@ public class MemberServiceImpl implements MemberService{
      * 회원 가입
      */
     @Transactional
-    public ResponseEntity<?> join(JoinReq joinReq) {
+    public ResponseEntity<?> join(JoinReq joinReq, MultipartFile image) throws IOException {
         // 동일 사용자 생성 방지
         if (memberRepository.existsMemberByEmail(joinReq.email())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
@@ -59,7 +63,14 @@ public class MemberServiceImpl implements MemberService{
         Member member = Member.toEntity(joinReq, passwordEncoder);
         memberRepository.save(member);
 
+        // 이미지가 존재하는 경우에만 이미지 업로드 및 설정
+        if(image!=null && !image.isEmpty()){
+            member.changeProfileImgLink(s3Service.uploadFile(image));
+        }
+
         return ResponseEntity.ok()
                 .body(ApiResponse.onSuccess("회원 가입에 성공 하였습니다."));
     }
+
+
 }
