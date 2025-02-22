@@ -7,8 +7,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
-@Component
-@Order(1)
+//@Component
+//@Order(1)
 @RequiredArgsConstructor
 public class CategoryDataLoader implements CommandLineRunner {
     private final CategoryRepository categoryRepository;
