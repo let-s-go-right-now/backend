@@ -17,8 +17,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Component
-@Order(1)
+//@Component
+//@Order(1)
 @RequiredArgsConstructor
 public class TripDataLoader implements CommandLineRunner {
 
