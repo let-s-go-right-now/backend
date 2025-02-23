@@ -105,9 +105,9 @@ public class ExpenseServiceImpl implements ExpenseService{
                 .map(TripMember::getMember)
                 .collect(Collectors.toList());
 
-        // 2. 정산 대상 필터링 (제외 멤버 제외)
+        // 2. 정산 대상 필터링 (제외 멤버 제거, 결제자는 별도 처리)
         List<Member> actualParticipants = participants.stream()
-                .filter(member -> !excludedMembers.contains(member)) // 결제자도 정산에 포함
+                .filter(member -> !excludedMembers.contains(member) && !member.equals(payer)) // 결제자 제외
                 .collect(Collectors.toList());
 
         // 정산할 회원이 없는 경우 예외 처리
@@ -115,20 +115,19 @@ public class ExpenseServiceImpl implements ExpenseService{
             throw new GeneralException(ErrorStatus._SETTLEMENT_MEMBER_NOT_FOUND);
         }
 
-        // 4. 1인당 정산 금액 계산
+        // 3. 1인당 정산 금액 계산
         int totalAmount = expense.getPrice();
-        int settlementAmount = totalAmount / actualParticipants.size();
-        int remainingAmount = totalAmount % actualParticipants.size(); // 나머지 금액
+        int settlementAmount = totalAmount / (actualParticipants.size() + 1); // 결제자 포함 인원(+1)
+        int remainingAmount = totalAmount % (actualParticipants.size() + 1); // 남은 금액 계산 -
 
-        // 5. 정산 결과 저장 - 여행, 정산 금액, 보내는 사람(참여자), 받는 사람(결제자)
+        // 4. 참여자들에게 정산 금액 저장
         for (Member participant : actualParticipants) {
             settlementResultRepository.save(SettlementResult.toEntity(trip, settlementAmount, participant, payer));
         }
 
-        // 남은 금액은 결제자 부담
-        if (remainingAmount > 0) {
-            settlementResultRepository.save(SettlementResult.toEntity(trip, remainingAmount, payer, payer));
-        }
+        // 5. 결제자에게 남은 금액 포함하여 저장
+        settlementResultRepository.save(SettlementResult.toEntity(trip, settlementAmount + remainingAmount, payer, payer));
     }
+
 
 }
