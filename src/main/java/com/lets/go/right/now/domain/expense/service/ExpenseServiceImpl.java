@@ -3,20 +3,27 @@ package com.lets.go.right.now.domain.expense.service;
 import com.lets.go.right.now.domain.expense.dto.ExpenseCreateReq;
 import com.lets.go.right.now.domain.expense.entity.ExcludedMember;
 import com.lets.go.right.now.domain.expense.entity.Expense;
+import com.lets.go.right.now.domain.expense.entity.SettlementResult;
 import com.lets.go.right.now.domain.expense.entity.TripImage;
 import com.lets.go.right.now.domain.expense.repository.ExcludedMemberRepository;
 import com.lets.go.right.now.domain.expense.repository.ExpenseRepository;
+import com.lets.go.right.now.domain.expense.repository.SettlementResultRepository;
 import com.lets.go.right.now.domain.expense.repository.TripImageRepository;
 import com.lets.go.right.now.domain.member.entity.Member;
 import com.lets.go.right.now.domain.member.repository.MemberRepository;
 import com.lets.go.right.now.domain.trip.entity.Trip;
+import com.lets.go.right.now.domain.trip.entity.TripMember;
 import com.lets.go.right.now.domain.trip.repository.TripMemberRepository;
 import com.lets.go.right.now.domain.trip.repository.TripRepository;
+import com.lets.go.right.now.global.enums.statuscode.ErrorStatus;
+import com.lets.go.right.now.global.exception.GeneralException;
+import com.lets.go.right.now.global.response.ApiResponse;
 import com.lets.go.right.now.global.s3.service.S3Service;
 import jakarta.transaction.Transactional;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -30,6 +37,7 @@ public class ExpenseServiceImpl implements ExpenseService{
     private final TripMemberRepository tripMemberRepository;
     private final MemberRepository memberRepository;
     private final TripImageRepository tripImageRepository;
+    private final SettlementResultRepository settlementResultRepository;
     private final ExcludedMemberRepository excludedMemberRepository;
     private final S3Service s3Service;
 
@@ -42,39 +50,85 @@ public class ExpenseServiceImpl implements ExpenseService{
             Long tripId, ExpenseCreateReq expenseCreateReq, List<MultipartFile> images) throws IOException {
         // 1. 여행 존재 여부 확인
         Trip trip = tripRepository.getTripById(tripId);
-        // 2. 지출 정보 생성
-        Expense expense = ExpenseCreateReq.of(expenseCreateReq);
+        // 2. 결제자 정보 확인
+        Member payer = memberRepository.getMemberByEmail(expenseCreateReq.payerEmail());
+
+        // 3. 이미지 업로드
+        List<TripImage> tripImages = new ArrayList<>();
+        if (images != null) {
+            for (MultipartFile image : images) {
+                String imageUrl = s3Service.uploadFile(image);
+                tripImages.add(TripImage.toEntity(imageUrl, null)); // Expense는 나중에 설정
+            }
+        }
+        saveExpenseWithTransaction(trip, expenseCreateReq, payer, tripImages);
+
+        return ResponseEntity.ok(ApiResponse.onSuccess("지출 기록이 생성 되었습니다."));
+    }
+
+    // 지출 기록 저장
+    @Transactional
+    public void saveExpenseWithTransaction(Trip trip, ExpenseCreateReq expenseCreateReq,
+                                           Member payer, List<TripImage> tripImages) {
+        // 1. Expense 객체 생성 및 저장
+        Expense expense = ExpenseCreateReq.of(expenseCreateReq, trip, payer);
         expenseRepository.save(expense);
-        // 3. 지출 연관 이미지 저장
-        for (MultipartFile image : images) {
-            String imageUrl = s3Service.uploadFile(image);
-            TripImage tripImage = TripImage.toEntity(imageUrl, expense);
+
+        // 2. TripImage 객체 저장
+        for (TripImage tripImage : tripImages) {
+            tripImage.changeExpense(expense);
             tripImageRepository.save(tripImage);
         }
-        // 4. 결제자 설정
-        // 4.1. 결제자 존재 여부 파악
-        Member payer = memberRepository.getMemberByEmail(expenseCreateReq.payerEmail());
-        expense.changePayer(payer);
 
-        // 5. 지출 제외자 탐색
-        List<String> excludedMemberEmailList = expenseCreateReq.excludedMember();
-        for (String excludedMemberEmail : excludedMemberEmailList) {
-            Member member = memberRepository.getMemberByEmail(excludedMemberEmail);
-            // 5.1. 지출 제외자 정보 저장
-            ExcludedMember excludedMember = ExcludedMember.toEntity(member, expense);
-            excludedMemberRepository.save(excludedMember);
+        // 3. 지출 제외 멤버 저장
+        List<Member> excludedMembers = new ArrayList<>();
+        if (expenseCreateReq.excludedMember() != null) {
+            for (String excludedEmail : expenseCreateReq.excludedMember()) {
+                // 3.1. 회원 존재 여부 확인
+                Member excludedMember = memberRepository.getMemberByEmail(excludedEmail);
+                excludedMembers.add(excludedMember);
+            }
+            excludedMemberRepository.saveAll(excludedMembers.stream()
+                    .map(member -> ExcludedMember.toEntity(member, expense))
+                    .collect(Collectors.toList()));
         }
 
-        // 6. 정산 결과 데이터 생성 - 어떤 여행에서, 누가 누구에게 돈을 보내야 하는지
-        // 6.1. 정산 대상자 탐색
-        // - 지출 제외자를 제외한 회원들에게 지출 금액을 나누어 할당
-        // - 본인 부담금도 저장 -> 나의 지출 금액으로 확인 가능
-//        ArrayList<Member> tripMemberList = tripMemberRepository.findTripMembersByTrip(trip);
-//        int participantsCount = tripMemberList.size() - excludedMemberEmailList.size(); // 참여자 수
-//        // 정산 금액
-//        for (Member participant : tripMemberList) {
-//
-//        }
-        return null;
+        // 4. 정산 결과에 반영
+        saveSettlement(trip, expense, payer, excludedMembers);
     }
+
+    @Transactional
+    public void saveSettlement(Trip trip, Expense expense, Member payer, List<Member> excludedMembers) {
+        // 1. 여행 참여 멤버 조회
+        List<TripMember> tripMembers = tripMemberRepository.findByTrip(trip);
+        List<Member> participants = tripMembers.stream()
+                .map(TripMember::getMember)
+                .collect(Collectors.toList());
+
+        // 2. 정산 대상 필터링 (제외 멤버 제외)
+        List<Member> actualParticipants = participants.stream()
+                .filter(member -> !excludedMembers.contains(member)) // 결제자도 정산에 포함
+                .collect(Collectors.toList());
+
+        // 정산할 회원이 없는 경우 예외 처리
+        if (actualParticipants.isEmpty()) {
+            throw new GeneralException(ErrorStatus._SETTLEMENT_MEMBER_NOT_FOUND);
+        }
+
+        // 4. 1인당 정산 금액 계산
+        int totalAmount = expense.getPrice();
+        int settlementAmount = totalAmount / actualParticipants.size();
+        int remainingAmount = totalAmount % actualParticipants.size(); // 나머지 금액
+
+        // 5. 정산 결과 저장 - 여행, 정산 금액, 보내는 사람(참여자), 받는 사람(결제자)
+        for (Member participant : actualParticipants) {
+            settlementResultRepository.save(SettlementResult.toEntity(trip, settlementAmount, participant, payer));
+        }
+
+        // 남은 금액은 결제자 부담
+        if (remainingAmount > 0) {
+            settlementResultRepository.save(SettlementResult.toEntity(trip, remainingAmount, payer, payer));
+        }
+    }
+
 }

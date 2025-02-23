@@ -38,4 +38,8 @@ public class TripImage {
                 .imageUrl(imageUrl)
                 .build();
     }
+
+    public void changeExpense(Expense expense) {
+        this.expense = expense;
+    }
 }

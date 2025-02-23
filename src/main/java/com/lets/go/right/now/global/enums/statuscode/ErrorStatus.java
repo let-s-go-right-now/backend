@@ -35,7 +35,10 @@ public enum ErrorStatus implements BaseCode {
 	_S3_REMOVE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "S35004", "S3 파일 삭제 중 오류가 발생하였습니다."),
 
 	// Trip Error
-	_TRIP_NOT_FOUND(HttpStatus.NOT_FOUND, "TRIP4001", "해당하는 여행이 존재 하지 않습니다.");
+	_TRIP_NOT_FOUND(HttpStatus.NOT_FOUND, "TRIP4001", "해당하는 여행이 존재 하지 않습니다."),
+
+	// settlement Error
+	_SETTLEMENT_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "TRIP4001", "해당하는 여행이 존재 하지 않습니다.");
 
 
 	private final HttpStatus httpStatus;

@@ -38,4 +38,15 @@ public class SettlementResult extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "receiver_id")
     private Member receiver;
+
+    // == 편의 메소드 == //
+    public static SettlementResult toEntity(
+            Trip trip, Integer amount, Member sender, Member receiver) {
+        return SettlementResult.builder()
+                .trip(trip)
+                .amount(amount)
+                .sender(sender)
+                .receiver(receiver)
+                .build();
+    }
 }

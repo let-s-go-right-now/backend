@@ -3,6 +3,7 @@ package com.lets.go.right.now.domain.expense.controller;
 import com.lets.go.right.now.domain.expense.dto.ExpenseCreateReq;
 import com.lets.go.right.now.domain.expense.service.ExpenseService;
 import com.lets.go.right.now.global.jwt.dto.CustomUserDetails;
+import java.io.IOException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +26,7 @@ public class ExpenseController {
     public ResponseEntity<?> createExpense(
             @PathVariable("trip_id") Long tripId,
             @ModelAttribute ExpenseCreateReq expenseCreateReq,
-            @RequestParam(value = "images", required = false) List<MultipartFile> images) {
+            @RequestParam(value = "images", required = false) List<MultipartFile> images) throws IOException {
         return expenseService.createExpense(tripId, expenseCreateReq, images);
     }
 }

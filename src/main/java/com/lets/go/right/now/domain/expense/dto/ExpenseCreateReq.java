@@ -1,8 +1,8 @@
 package com.lets.go.right.now.domain.expense.dto;
 
-import com.lets.go.right.now.domain.expense.entity.Category;
 import com.lets.go.right.now.domain.expense.entity.Expense;
 import com.lets.go.right.now.domain.member.entity.Member;
+import com.lets.go.right.now.domain.trip.entity.Trip;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -15,13 +15,14 @@ public record ExpenseCreateReq(
         String payerEmail,
         List<String> excludedMember
 ) {
-    public static Expense of(ExpenseCreateReq expenseCreateReq) {
+    public static Expense of(ExpenseCreateReq expenseCreateReq, Trip trip, Member payer) {
         return Expense.builder()
                 .expenseName(expenseCreateReq.expenseName())
                 .price(expenseCreateReq.price())
                 .details(expenseCreateReq.details())
                 .expenseDate(expenseCreateReq.expenseDate())
-                // 카테고리 추가 필요
+                .trip(trip)
+                .payer(payer)
                 .build();
     }
 }

@@ -1,6 +1,7 @@
 package com.lets.go.right.now.domain.expense.entity;
 
 import com.lets.go.right.now.domain.member.entity.Member;
+import com.lets.go.right.now.domain.trip.entity.Trip;
 import com.lets.go.right.now.global.entity.BaseEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -35,11 +36,6 @@ public class Expense extends BaseEntity {
     private LocalDate expenseDate; // 지출 날짜
 
     // == 연관 관계 설정 == //
-    // 지출과 관련된 여행 사진
-    @Builder.Default
-    @OneToMany(mappedBy = "expense", cascade = CascadeType.ALL)
-    private List<TripImage> tripImages = new ArrayList<>();
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     private Category category;
@@ -47,6 +43,16 @@ public class Expense extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "payer_id")
     private Member payer; // 결제자
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "trip_id")
+    private Trip trip;
+
+
+    // 지출과 관련된 여행 사진
+    @Builder.Default
+    @OneToMany(mappedBy = "expense", cascade = CascadeType.ALL)
+    private List<TripImage> tripImages = new ArrayList<>();
 
     // 지출에 제외된 사람들
     @Builder.Default
