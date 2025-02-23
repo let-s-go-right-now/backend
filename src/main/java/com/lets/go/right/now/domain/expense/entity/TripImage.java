@@ -9,6 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.security.PublicKey;
 import lombok.*;
 
 @Entity
@@ -23,8 +24,18 @@ public class TripImage {
     @Column(name = "trip_image_id")
     private Long id;
 
+    private String imageUrl;
+
     // == 연관 관계 설정 == //
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "expense_id")
     private Expense expense;
+
+    // == 편의 메소드 == //
+    public static TripImage toEntity(String imageUrl, Expense expense) {
+        return TripImage.builder()
+                .expense(expense)
+                .imageUrl(imageUrl)
+                .build();
+    }
 }

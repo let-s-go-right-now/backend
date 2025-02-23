@@ -52,4 +52,9 @@ public class Expense extends BaseEntity {
     @Builder.Default
     @OneToMany(mappedBy = "expense", cascade = CascadeType.ALL)
     private List<ExcludedMember> excludedMemberList = new ArrayList<>();
+
+    // == 편의 메소드 ==
+    public void changePayer(Member payer) {
+        this.payer = payer;
+    }
 }

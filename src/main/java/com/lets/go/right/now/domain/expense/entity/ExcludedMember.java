@@ -32,4 +32,12 @@ public class ExcludedMember {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "expense_id")
     private Expense expense;
+
+    // == 편의 메소드 == //
+    public static ExcludedMember toEntity(Member excludedMember, Expense expense) {
+        return ExcludedMember.builder()
+                .excludedMember(excludedMember)
+                .expense(expense)
+                .build();
+    }
 }
