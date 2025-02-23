@@ -1,6 +1,7 @@
 package com.lets.go.right.now.domain.member.entity;
 
 import com.lets.go.right.now.domain.expense.entity.ExcludedMember;
+import com.lets.go.right.now.domain.expense.entity.SettlementResult;
 import com.lets.go.right.now.domain.member.dto.JoinReq;
 import com.lets.go.right.now.domain.trip.entity.ScrappedTrip;
 import com.lets.go.right.now.domain.trip.entity.TripMember;
@@ -61,4 +62,13 @@ public class Member {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     List<ScrappedTrip> scrappedTripList = new ArrayList<>();
 
+    // 내가 보내야 할 정산 결과
+    @Builder.Default
+    @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL)
+    List<SettlementResult> settlementSendResults = new ArrayList<>();
+
+    // 내가 받아야 할 정산 결과
+    @Builder.Default
+    @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL)
+    List<SettlementResult> settlementReceiveResults = new ArrayList<>();
 }
