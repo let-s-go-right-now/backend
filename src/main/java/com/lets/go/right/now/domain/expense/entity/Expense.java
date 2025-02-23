@@ -1,11 +1,14 @@
 package com.lets.go.right.now.domain.expense.entity;
 
+import com.lets.go.right.now.domain.expense.entity.enums.Category;
 import com.lets.go.right.now.domain.member.entity.Member;
 import com.lets.go.right.now.domain.trip.entity.Trip;
 import com.lets.go.right.now.global.entity.BaseEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -34,10 +37,7 @@ public class Expense extends BaseEntity {
     private Integer price; // 지출 금액
     private String details; // 상세 내역
     private LocalDate expenseDate; // 지출 날짜
-
-    // == 연관 관계 설정 == //
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id")
+    @Enumerated(value = EnumType.STRING)
     private Category category;
 
     @ManyToOne(fetch = FetchType.LAZY)
