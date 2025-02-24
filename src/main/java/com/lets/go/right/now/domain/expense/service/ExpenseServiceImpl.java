@@ -70,7 +70,13 @@ public class ExpenseServiceImpl implements ExpenseService{
      * 지출 기록 삭제
      */
     @Override
-    public ResponseEntity<?> deleteExpense(Long expenseId, String ownerEmail) throws IOException {
+    public ResponseEntity<?> deleteExpense(Long expenseId) throws IOException {
+        // 1. 지출 기록 존재 여부 확인
+        
+        // 2. 지출에 연관된 S3 이미지 삭제
+
+        // 3. 관련 엔티티 삭제 여부 확인(Cascade)
+
         return null;
     }
 

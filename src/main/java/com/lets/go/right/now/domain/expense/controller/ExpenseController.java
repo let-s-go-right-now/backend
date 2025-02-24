@@ -33,8 +33,7 @@ public class ExpenseController {
 
     @DeleteMapping("{expense_id}")
     public ResponseEntity<?> deleteExpense(
-            @PathVariable Long expense_id,
-            @AuthenticationPrincipal CustomUserDetails customUserDetails) throws IOException {
-        return expenseService.deleteExpense(expense_id, customUserDetails.getEmail());
+            @PathVariable Long expense_id) throws IOException {
+        return expenseService.deleteExpense(expense_id);
     }
 }
