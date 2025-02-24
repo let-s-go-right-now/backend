@@ -66,6 +66,14 @@ public class ExpenseServiceImpl implements ExpenseService{
         return ResponseEntity.ok(ApiResponse.onSuccess("지출 기록이 생성 되었습니다."));
     }
 
+    /**
+     * 지출 기록 삭제
+     */
+    @Override
+    public ResponseEntity<?> deleteExpense(Long expenseId, String ownerEmail) throws IOException {
+        return null;
+    }
+
     // 지출 기록 저장
     @Transactional
     public void saveExpenseWithTransaction(Trip trip, ExpenseCreateReq expenseCreateReq,
