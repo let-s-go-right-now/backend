@@ -39,11 +39,16 @@ public class SettlementResult extends BaseEntity {
     @JoinColumn(name = "receiver_id")
     private Member receiver;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "expense_id")
+    private Expense expense;
+
     // == 편의 메소드 == //
     public static SettlementResult toEntity(
-            Trip trip, Integer amount, Member sender, Member receiver) {
+            Trip trip, Expense expense, Integer amount, Member sender, Member receiver) {
         return SettlementResult.builder()
                 .trip(trip)
+                .expense(expense)
                 .amount(amount)
                 .sender(sender)
                 .receiver(receiver)

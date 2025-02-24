@@ -54,6 +54,11 @@ public class Expense extends BaseEntity {
     @OneToMany(mappedBy = "expense", cascade = CascadeType.ALL)
     private List<TripImage> tripImages = new ArrayList<>();
 
+    // 해당 지출과 관련된 정산 결과들
+    @Builder.Default
+    @OneToMany(mappedBy = "expense", cascade = CascadeType.ALL)
+    private List<SettlementResult> settlementResults = new ArrayList<>();
+
     // 지출에 제외된 사람들
     @Builder.Default
     @OneToMany(mappedBy = "expense", cascade = CascadeType.ALL)

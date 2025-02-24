@@ -70,15 +70,33 @@ public class ExpenseServiceImpl implements ExpenseService{
      * 지출 기록 삭제
      */
     @Override
+    @Transactional
     public ResponseEntity<?> deleteExpense(Long expenseId) throws IOException {
         // 1. 지출 기록 존재 여부 확인
-        
+        Expense expense = expenseRepository.getExpenseById(expenseId);
+
         // 2. 지출에 연관된 S3 이미지 삭제
+        List<TripImage> tripImages = tripImageRepository.findAllByExpense(expense);
+        ArrayList<String> tripImageLinks = new ArrayList<>();
+        for (TripImage tripImage : tripImages) {
+            tripImageLinks.add(tripImage.getImageUrl());
+        }
+        deleteS3Images(tripImageLinks);
 
-        // 3. 관련 엔티티 삭제 여부 확인(Cascade)
+        expenseRepository.delete(expense); // 지출 기록 삭제
 
-        return null;
+        return ResponseEntity.ok(ApiResponse.onSuccess("지출 기록이 삭제 되었습니다."));
     }
+
+
+    // S3 이미지 삭제
+    @Transactional
+    public void deleteS3Images(ArrayList<String> tripImageLinks) {
+        for (String tripImageLink : tripImageLinks) {
+            s3Service.deleteFileByURL(tripImageLink);
+        }
+    }
+
 
     // 지출 기록 저장
     @Transactional
@@ -136,11 +154,11 @@ public class ExpenseServiceImpl implements ExpenseService{
 
         // 4. 참여자들에게 정산 금액 저장
         for (Member participant : actualParticipants) {
-            settlementResultRepository.save(SettlementResult.toEntity(trip, settlementAmount, participant, payer));
+            settlementResultRepository.save(SettlementResult.toEntity(trip,expense,settlementAmount, participant, payer));
         }
 
         // 5. 결제자에게 남은 금액 포함하여 저장
-        settlementResultRepository.save(SettlementResult.toEntity(trip, settlementAmount + remainingAmount, payer, payer));
+        settlementResultRepository.save(SettlementResult.toEntity(trip,expense,settlementAmount + remainingAmount, payer, payer));
     }
 
 

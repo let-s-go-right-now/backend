@@ -52,14 +52,11 @@ public class S3Service {
 
     // S3주소로 파일 삭제
     public void deleteFileByURL(String s3URL) {
-        // <Multipart Image>
-        // 1. 이미지가 존재할 경우 -> 프로필 변경 요청에 해당 ; 기존 이미지 삭제, 새 이미지 저장
-        // 2. 이미지가 존재하지 않을 경우 -> 기본 프로필 변경에 해당 ; 기존 이미지 삭제
+        // url을 바탕으로 파일 이름 추적 및 삭제
         if (s3URL != null && !s3URL.isEmpty()) {
             String fileName = extractFileNameFromUrl(s3URL);
             deleteFile(fileName);
         }
-
     }
 
 
