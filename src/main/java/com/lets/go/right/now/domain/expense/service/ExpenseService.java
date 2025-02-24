@@ -9,4 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 public interface ExpenseService {
     ResponseEntity<?> createExpense(Long tripId, ExpenseCreateReq expenseCreateReq, List<MultipartFile> images)
             throws IOException;
+
+    ResponseEntity<?> deleteExpense(Long expenseId)
+            throws IOException;
 }

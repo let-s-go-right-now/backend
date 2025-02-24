@@ -8,6 +8,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,5 +29,11 @@ public class ExpenseController {
             @ModelAttribute ExpenseCreateReq expenseCreateReq,
             @RequestParam(value = "images", required = false) List<MultipartFile> images) throws IOException {
         return expenseService.createExpense(tripId, expenseCreateReq, images);
+    }
+
+    @DeleteMapping("{expense_id}")
+    public ResponseEntity<?> deleteExpense(
+            @PathVariable Long expense_id) throws IOException {
+        return expenseService.deleteExpense(expense_id);
     }
 }
