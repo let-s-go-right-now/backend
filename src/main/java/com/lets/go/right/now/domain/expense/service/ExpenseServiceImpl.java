@@ -104,17 +104,10 @@ public class ExpenseServiceImpl implements ExpenseService{
             expenseImageUrls.add(tripImage.getImageUrl());
         }
         // 3. 지출에 참여중인 회원 정보 조회
-        // 3.1. 지출에서 제외된 회원 정보 조회
-        List<Member> excludedMember = expense.getExcludedMemberList()
-                .stream().map(ExcludedMember::getExcludedMember)
-                .toList();
-        // 3.2. 여행 참여자 조회
-        List<Member> tripMemberList = expense.getTrip().getMemberList()
-                .stream().map(TripMember::getMember)
-                .toList();
-        // 3.3. 필터링 - 해당 지출에 참여한 회원 정보 조회
-        List<Member> expenseParticipants = tripMemberList.stream()
-                .filter(member -> !excludedMember.contains(member)).toList(); // 계산 참여자 필터링
+        // 정산 결과 돈을 보내야 하는 사람들이 정산에 포함된 사람
+        List<SettlementResult> settlementResults = settlementResultRepository.findByExpense(expense);
+        List<Member> expenseParticipants = settlementResults.stream().map(SettlementResult::getSender).toList();
+
         // 4. 반환 DTO 생성 및 반환
         ExpenseViewRes resultDto = ExpenseViewRes.of(expense, expenseImageUrls, expense.getPayer(),
                 expenseParticipants);
