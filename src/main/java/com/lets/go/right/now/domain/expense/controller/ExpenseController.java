@@ -57,7 +57,7 @@ public class ExpenseController {
     /**
      * 지출 수정
      */
-    @GetMapping("{expense_id}")
+    @PutMapping("{expense_id}")
     public ResponseEntity<?> editExpense(
             @PathVariable("expense_id") Long expenseId,
             @ModelAttribute ExpenseCreateReq expenseCreateReq,

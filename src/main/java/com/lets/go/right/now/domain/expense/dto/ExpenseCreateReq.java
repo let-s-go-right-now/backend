@@ -33,7 +33,7 @@ public record ExpenseCreateReq(
                 .build();
     }
 
-    private static Category convertToCategory(String categoryName) {
+    public static Category convertToCategory(String categoryName) {
         try {
             return Category.valueOf(categoryName.toUpperCase()); // 문자열을 ENUM으로 변환
         } catch (IllegalArgumentException | NullPointerException e) {

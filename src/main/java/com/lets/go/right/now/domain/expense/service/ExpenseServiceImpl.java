@@ -55,13 +55,8 @@ public class ExpenseServiceImpl implements ExpenseService{
         Member payer = memberRepository.getMemberByEmail(expenseCreateReq.payerEmail());
 
         // 3. 이미지 업로드
-        List<TripImage> tripImages = new ArrayList<>();
-        if (images != null) {
-            for (MultipartFile image : images) {
-                String imageUrl = s3Service.uploadFile(image);
-                tripImages.add(TripImage.toEntity(imageUrl, null)); // Expense는 나중에 설정
-            }
-        }
+        List<TripImage> tripImages = uploadExpenseImages(images);
+
         saveExpenseWithTransaction(trip, expenseCreateReq, payer, tripImages);
 
         return ResponseEntity.ok(ApiResponse.onSuccess("지출 기록이 생성 되었습니다."));
@@ -78,11 +73,7 @@ public class ExpenseServiceImpl implements ExpenseService{
 
         // 2. 지출에 연관된 S3 이미지 삭제
         List<TripImage> tripImages = tripImageRepository.findAllByExpense(expense);
-        ArrayList<String> tripImageLinks = new ArrayList<>();
-        for (TripImage tripImage : tripImages) {
-            tripImageLinks.add(tripImage.getImageUrl());
-        }
-        deleteS3Images(tripImageLinks);
+        deleteS3Images(tripImages);
 
         expenseRepository.delete(expense); // 지출 기록 삭제
 
@@ -93,15 +84,35 @@ public class ExpenseServiceImpl implements ExpenseService{
      * 지출 정보 수정
      */
     @Override
+    @Transactional
     public ResponseEntity<?> editExpense(
             Long expenseId, ExpenseCreateReq expenseCreateReq, List<MultipartFile> images)
             throws IOException {
         // 1. 지출 조회
-        // 2. 정보 수정
-        // 3. 기존 이미지 삭제(S3 삭제, 엔티티 삭제), 새로운 이미지 업로드
-        // 4. 기존 지출 제외 멤버 새로운 지출 멤버, 정산 금액 갱신
-        // 5. 기존 정산 결과 삭제, 새로운 정산 결과 업데이트
-        return null;
+        Expense expense = expenseRepository.getExpenseById(expenseId);
+        // 2. 결제자 정보 확인
+        Member payer = memberRepository.getMemberByEmail(expenseCreateReq.payerEmail());
+        // 3. 정보 수정
+        expense.editExpense(expenseCreateReq, payer);
+        // 4. 기존 이미지 삭제(S3 삭제, 엔티티 삭제), 새로운 이미지 업로드
+        List<TripImage> lastTripImages = expense.getTripImages();
+        deleteS3Images(lastTripImages);
+        tripImageRepository.deleteByExpenseId(expense.getId()); // 엔티티 삭제
+        List<TripImage> tripImages = uploadExpenseImages(images); // 새로운 이미지 업로드
+        // 4.1. 새로운 이미지 엔티티 저장 및 연관 관계 설정
+        for (TripImage tripImage : tripImages) {
+            tripImage.changeExpense(expense);
+            tripImageRepository.save(tripImage);
+        }
+        // 4. 기존 지출 제외 멤버 정보 제거
+        excludedMemberRepository.deleteByExpenseId(expense.getId());
+        // 5. 기존 정산 결과 삭제
+        settlementResultRepository.deleteByExpenseId(expense.getId());
+        // 6. 지출 제외 멤버 정보 저장
+        List<Member> excludedMembers = saveExcludedMember(expenseCreateReq.excludedMember(), expense);
+        // 7. 정산 결과에 반영
+        saveSettlement(expense.getTrip(), expense, payer, excludedMembers);
+        return ResponseEntity.ok(ApiResponse.onSuccess("지출 내역이 수정 되었습니다."));
     }
 
     /**
@@ -129,16 +140,28 @@ public class ExpenseServiceImpl implements ExpenseService{
         return ResponseEntity.ok(ApiResponse.onSuccess(resultDto));
     }
 
+    // S3 이미지 업로드
+    public List<TripImage> uploadExpenseImages(List<MultipartFile> images) throws IOException {
+        List<TripImage> tripImages = new ArrayList<>();
+        if (images != null) {
+            for (MultipartFile image : images) {
+                String imageUrl = s3Service.uploadFile(image);
+                tripImages.add(TripImage.toEntity(imageUrl, null)); // Expense는 나중에 설정
+            }
+        }
+        return tripImages;
+    }
+
     // S3 이미지 삭제
     @Transactional
-    public void deleteS3Images(ArrayList<String> tripImageLinks) {
-        for (String tripImageLink : tripImageLinks) {
-            s3Service.deleteFileByURL(tripImageLink);
+    public void deleteS3Images(List<TripImage> tripImages) {
+        for (TripImage tripImage : tripImages) {
+            s3Service.deleteFileByURL(tripImage.getImageUrl());
         }
     }
 
 
-    // 지출 기록 저장
+    // 지출 기록, 이미지 저장 - 트랜잭션 분리
     @Transactional
     public void saveExpenseWithTransaction(Trip trip, ExpenseCreateReq expenseCreateReq,
                                            Member payer, List<TripImage> tripImages) {
@@ -153,9 +176,16 @@ public class ExpenseServiceImpl implements ExpenseService{
         }
 
         // 3. 지출 제외 멤버 저장
+        List<Member> excludedMembers = saveExcludedMember(expenseCreateReq.excludedMember(), expense);
+
+        // 4. 정산 결과에 반영
+        saveSettlement(trip, expense, payer, excludedMembers);
+    }
+
+    public List<Member> saveExcludedMember(List<String> excludedMemberEmails, Expense expense) {
         List<Member> excludedMembers = new ArrayList<>();
-        if (expenseCreateReq.excludedMember() != null) {
-            for (String excludedEmail : expenseCreateReq.excludedMember()) {
+        if (excludedMemberEmails != null) {
+            for (String excludedEmail : excludedMemberEmails) {
                 // 3.1. 회원 존재 여부 확인
                 Member excludedMember = memberRepository.getMemberByEmail(excludedEmail);
                 excludedMembers.add(excludedMember);
@@ -164,10 +194,9 @@ public class ExpenseServiceImpl implements ExpenseService{
                     .map(member -> ExcludedMember.toEntity(member, expense))
                     .collect(Collectors.toList()));
         }
-
-        // 4. 정산 결과에 반영
-        saveSettlement(trip, expense, payer, excludedMembers);
+        return excludedMembers;
     }
+
 
     @Transactional
     public void saveSettlement(Trip trip, Expense expense, Member payer, List<Member> excludedMembers) {
