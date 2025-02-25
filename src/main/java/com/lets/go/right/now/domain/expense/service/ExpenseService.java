@@ -12,4 +12,7 @@ public interface ExpenseService {
 
     ResponseEntity<?> deleteExpense(Long expenseId)
             throws IOException;
+
+    ResponseEntity<?> getExpenseInfo(Long expenseId)
+            throws IOException;
 }

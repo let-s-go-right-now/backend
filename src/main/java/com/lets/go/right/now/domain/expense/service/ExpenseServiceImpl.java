@@ -89,6 +89,17 @@ public class ExpenseServiceImpl implements ExpenseService{
     }
 
 
+    /**
+     * 지출 기록 보기
+     */
+    @Override
+    public ResponseEntity<?> getExpenseInfo(Long expenseId) throws IOException {
+        // 1. 지출 조회
+        // 2. 지출 연관 이미지 조회
+        // 3. 지출에 참여중인 회원 정보 조회
+        return null;
+    }
+
     // S3 이미지 삭제
     @Transactional
     public void deleteS3Images(ArrayList<String> tripImageLinks) {
