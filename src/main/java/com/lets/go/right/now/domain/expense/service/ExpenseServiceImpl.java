@@ -89,6 +89,20 @@ public class ExpenseServiceImpl implements ExpenseService{
         return ResponseEntity.ok(ApiResponse.onSuccess("지출 기록이 삭제 되었습니다."));
     }
 
+    /**
+     * 지출 정보 수정
+     */
+    @Override
+    public ResponseEntity<?> editExpense(
+            Long expenseId, ExpenseCreateReq expenseCreateReq, List<MultipartFile> images)
+            throws IOException {
+        // 1. 지출 조회
+        // 2. 정보 수정
+        // 3. 기존 이미지 삭제(S3 삭제, 엔티티 삭제), 새로운 이미지 업로드
+        // 4. 기존 지출 제외 멤버 새로운 지출 멤버, 정산 금액 갱신
+        // 5. 기존 정산 결과 삭제, 새로운 정산 결과 업데이트
+        return null;
+    }
 
     /**
      * 지출 기록 보기

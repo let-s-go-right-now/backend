@@ -14,4 +14,7 @@ public interface ExpenseService {
             throws IOException;
 
     ResponseEntity<?> getExpenseInfo(Long expenseId);
+
+    ResponseEntity<?> editExpense(Long expenseId, ExpenseCreateReq expenseCreateReq, List<MultipartFile> images)
+            throws IOException;
 }
