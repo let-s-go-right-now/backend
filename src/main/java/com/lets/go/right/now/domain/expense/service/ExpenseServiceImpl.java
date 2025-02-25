@@ -1,6 +1,7 @@
 package com.lets.go.right.now.domain.expense.service;
 
 import com.lets.go.right.now.domain.expense.dto.ExpenseCreateReq;
+import com.lets.go.right.now.domain.expense.dto.ExpenseViewRes;
 import com.lets.go.right.now.domain.expense.entity.ExcludedMember;
 import com.lets.go.right.now.domain.expense.entity.Expense;
 import com.lets.go.right.now.domain.expense.entity.SettlementResult;
@@ -93,11 +94,32 @@ public class ExpenseServiceImpl implements ExpenseService{
      * 지출 기록 보기
      */
     @Override
-    public ResponseEntity<?> getExpenseInfo(Long expenseId) throws IOException {
+    public ResponseEntity<?> getExpenseInfo(Long expenseId){
         // 1. 지출 조회
+        Expense expense = expenseRepository.getExpenseById(expenseId);
         // 2. 지출 연관 이미지 조회
+        List<TripImage> tripImages = tripImageRepository.findAllByExpense(expense);
+        ArrayList<String> expenseImageUrls = new ArrayList<>();
+        for (TripImage tripImage : tripImages) {
+            expenseImageUrls.add(tripImage.getImageUrl());
+        }
         // 3. 지출에 참여중인 회원 정보 조회
-        return null;
+        // 3.1. 지출에서 제외된 회원 정보 조회
+        List<Member> excludedMember = expense.getExcludedMemberList()
+                .stream().map(ExcludedMember::getExcludedMember)
+                .toList();
+        // 3.2. 여행 참여자 조회
+        List<Member> tripMemberList = expense.getTrip().getMemberList()
+                .stream().map(TripMember::getMember)
+                .toList();
+        // 3.3. 필터링 - 해당 지출에 참여한 회원 정보 조회
+        List<Member> expenseParticipants = tripMemberList.stream()
+                .filter(member -> !excludedMember.contains(member)).toList(); // 계산 참여자 필터링
+        // 4. 반환 DTO 생성 및 반환
+        ExpenseViewRes resultDto = ExpenseViewRes.of(expense, expenseImageUrls, expense.getPayer(),
+                expenseParticipants);
+
+        return ResponseEntity.ok(ApiResponse.onSuccess(resultDto));
     }
 
     // S3 이미지 삭제
@@ -146,12 +168,12 @@ public class ExpenseServiceImpl implements ExpenseService{
         List<TripMember> tripMembers = tripMemberRepository.findByTrip(trip);
         List<Member> participants = tripMembers.stream()
                 .map(TripMember::getMember)
-                .collect(Collectors.toList());
+                .toList();
 
         // 2. 정산 대상 필터링 (제외 멤버 제거, 결제자는 별도 처리)
         List<Member> actualParticipants = participants.stream()
                 .filter(member -> !excludedMembers.contains(member) && !member.equals(payer)) // 결제자 제외
-                .collect(Collectors.toList());
+                .toList();
 
         // 정산할 회원이 없는 경우 예외 처리
         if (actualParticipants.isEmpty()) {

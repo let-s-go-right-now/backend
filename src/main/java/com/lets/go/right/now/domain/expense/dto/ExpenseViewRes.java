@@ -1,6 +1,9 @@
 package com.lets.go.right.now.domain.expense.dto;
 
+import com.lets.go.right.now.domain.expense.entity.Expense;
 import com.lets.go.right.now.domain.expense.entity.enums.Category;
+import com.lets.go.right.now.domain.member.entity.Member;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -16,4 +19,24 @@ public record ExpenseViewRes(
         MemberProfileViewRes payer,
         List<MemberProfileViewRes> includedMember
 ) {
+    public static ExpenseViewRes of(Expense expense, List<String> expenseImages, Member payer, List<Member> participants) {
+        MemberProfileViewRes payerProfile = new MemberProfileViewRes(
+                payer.getName(), payer.getEmail(),
+                payer.getProfileImgLink());
+
+        ArrayList<MemberProfileViewRes> participantsArray = new ArrayList<>();
+        for (Member p : participants) {
+            participantsArray.add(new MemberProfileViewRes(p.getName(), p.getEmail(), p.getProfileImgLink()));
+        }
+        List<MemberProfileViewRes> participantsProfiles = participantsArray.stream().toList();
+
+        return new ExpenseViewRes(
+                expense.getCategory(),
+                expense.getExpenseName(),
+                expense.getPrice(),
+                expense.getDetails(),
+                expenseImages,
+                payerProfile,
+                participantsProfiles);
+    }
 }

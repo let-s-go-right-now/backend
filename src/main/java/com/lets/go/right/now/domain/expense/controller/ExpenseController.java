@@ -49,7 +49,7 @@ public class ExpenseController {
      */
     @GetMapping("{expense_id}")
     public ResponseEntity<?> getExpenseInfo(
-            @PathVariable Long expense_id) throws IOException {
+            @PathVariable Long expense_id){
         return expenseService.getExpenseInfo(expense_id);
     }
 }
