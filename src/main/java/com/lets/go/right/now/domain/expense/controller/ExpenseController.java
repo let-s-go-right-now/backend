@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -40,8 +41,8 @@ public class ExpenseController {
      */
     @DeleteMapping("{expense_id}")
     public ResponseEntity<?> deleteExpense(
-            @PathVariable Long expense_id) throws IOException {
-        return expenseService.deleteExpense(expense_id);
+            @PathVariable("expense_id") Long expenseId) throws IOException {
+        return expenseService.deleteExpense(expenseId);
     }
 
     /**
@@ -49,7 +50,18 @@ public class ExpenseController {
      */
     @GetMapping("{expense_id}")
     public ResponseEntity<?> getExpenseInfo(
-            @PathVariable Long expense_id){
-        return expenseService.getExpenseInfo(expense_id);
+            @PathVariable("expense_id") Long expenseId){
+        return expenseService.getExpenseInfo(expenseId);
+    }
+
+    /**
+     * 지출 수정
+     */
+    @PutMapping("{expense_id}")
+    public ResponseEntity<?> editExpense(
+            @PathVariable("expense_id") Long expenseId,
+            @ModelAttribute ExpenseCreateReq expenseCreateReq,
+            @RequestParam(value = "images", required = false) List<MultipartFile> images) throws IOException {
+        return expenseService.editExpense(expenseId, expenseCreateReq, images);
     }
 }

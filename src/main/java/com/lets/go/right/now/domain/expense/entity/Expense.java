@@ -1,5 +1,6 @@
 package com.lets.go.right.now.domain.expense.entity;
 
+import com.lets.go.right.now.domain.expense.dto.ExpenseCreateReq;
 import com.lets.go.right.now.domain.expense.entity.enums.Category;
 import com.lets.go.right.now.domain.member.entity.Member;
 import com.lets.go.right.now.domain.trip.entity.Trip;
@@ -67,5 +68,15 @@ public class Expense extends BaseEntity {
     // == 편의 메소드 ==
     public void changePayer(Member payer) {
         this.payer = payer;
+    }
+
+
+    public void editExpense(ExpenseCreateReq expenseCreateReq, Member payer) {
+        this.expenseName = expenseCreateReq.expenseName();
+        this.price = expenseCreateReq.price();
+        this.details = expenseCreateReq.details();
+        this.expenseDate = expenseCreateReq.expenseDate();
+        this.payer = payer;
+        this.category = ExpenseCreateReq.convertToCategory(expenseCreateReq.categoryName());
     }
 }
