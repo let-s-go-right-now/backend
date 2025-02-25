@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,6 +24,9 @@ import org.springframework.web.multipart.MultipartFile;
 public class ExpenseController {
     private final ExpenseService expenseService;
 
+    /**
+     * 지출 생성
+     */
     @PostMapping("{trip_id}")
     public ResponseEntity<?> createExpense(
             @PathVariable("trip_id") Long tripId,
@@ -31,9 +35,21 @@ public class ExpenseController {
         return expenseService.createExpense(tripId, expenseCreateReq, images);
     }
 
+    /**
+     * 지출 삭제
+     */
     @DeleteMapping("{expense_id}")
     public ResponseEntity<?> deleteExpense(
             @PathVariable Long expense_id) throws IOException {
         return expenseService.deleteExpense(expense_id);
+    }
+
+    /**
+     * 지출 정보 보기
+     */
+    @GetMapping("{expense_id}")
+    public ResponseEntity<?> getExpenseInfo(
+            @PathVariable Long expense_id){
+        return expenseService.getExpenseInfo(expense_id);
     }
 }
