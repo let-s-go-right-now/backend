@@ -1,4 +1,4 @@
-package com.lets.go.right.now.domain.trip.repository;
+package com.lets.go.right.now.domain.tripMember.repository;
 
 import com.lets.go.right.now.domain.member.entity.Member;
 import com.lets.go.right.now.domain.trip.entity.Trip;
