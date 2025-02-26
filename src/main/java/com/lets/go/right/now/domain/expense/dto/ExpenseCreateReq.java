@@ -7,13 +7,14 @@ import com.lets.go.right.now.domain.trip.entity.Trip;
 import com.lets.go.right.now.global.enums.statuscode.ErrorStatus;
 import com.lets.go.right.now.global.exception.GeneralException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public record ExpenseCreateReq(
         String expenseName, // 지출 이름
         Integer price, // 지출 금액
         String details, // 상세 내역
-        LocalDate expenseDate, // 지출 날짜
+        LocalDateTime expenseDate, // 지출 날짜
         String categoryName, // Enum 타입으로 변환할 문자열
         String payerEmail,
         List<String> excludedMember

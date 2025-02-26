@@ -20,6 +20,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.*;
@@ -38,7 +39,7 @@ public class Expense extends BaseEntity {
     private String expenseName; // 지출 이름
     private Integer price; // 지출 금액
     private String details; // 상세 내역
-    private LocalDate expenseDate; // 지출 날짜
+    private LocalDateTime expenseDate; // 지출 날짜
     @Enumerated(value = EnumType.STRING)
     private Category category;
 
