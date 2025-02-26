@@ -1,5 +1,7 @@
 package com.lets.go.right.now.domain.settlement.service;
 
-public interface SettlementService {
+import org.springframework.http.ResponseEntity;
 
+public interface SettlementService {
+    ResponseEntity<?> createPrepayment(Long tripId, String senderEmail);
 }
