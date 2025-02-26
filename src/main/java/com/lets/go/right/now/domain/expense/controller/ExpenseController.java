@@ -64,4 +64,16 @@ public class ExpenseController {
             @RequestParam(value = "images", required = false) List<MultipartFile> images) throws IOException {
         return expenseService.editExpense(expenseId, expenseCreateReq, images);
     }
+
+    /**
+     * 내가 포함된 지출 보기
+     */
+    @GetMapping("{trip_id}/mine")
+    public ResponseEntity<?> getMyExpenses(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
+            @PathVariable("trip_id") Long tripId,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "4") int size) {
+        return expenseService.getMyExpenses(tripId, customUserDetails.getEmail(), page, size);
+    }
 }

@@ -1,6 +1,7 @@
 package com.lets.go.right.now.domain.expense.service;
 
 import com.lets.go.right.now.domain.expense.dto.ExpenseCreateReq;
+import com.lets.go.right.now.domain.expense.dto.ExpensePreviewRes;
 import com.lets.go.right.now.domain.expense.dto.ExpenseViewRes;
 import com.lets.go.right.now.domain.expense.entity.ExcludedMember;
 import com.lets.go.right.now.domain.expense.entity.Expense;
@@ -26,8 +27,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -139,6 +145,39 @@ public class ExpenseServiceImpl implements ExpenseService{
 
         return ResponseEntity.ok(ApiResponse.onSuccess(resultDto));
     }
+
+    /**
+     * 내가 포함된 지출 보기
+     */
+    @Override
+    public ResponseEntity<?> getMyExpenses(Long tripId, String email, int page, int size) {
+        Member member = memberRepository.getMemberByEmail(email);
+        // 페이지 쿼리 설정, 정렬 기준 설정
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Pageable descSortPageable = getDescSortPageable(pageRequest);
+        // 1. 연관된 지출 조회 - 정산 결과 조회
+        // 1.1. 여행과 연관되고, 회원이 sender로 포함되었으며, expense가 null이 아닌 지출 조회
+        Page<SettlementResult> mySettlementResults = settlementResultRepository
+                .findMySettlementResults(tripId, member.getId(), descSortPageable);
+
+        // 2. 반환 DTO 생성
+        ArrayList<ExpensePreviewRes> resultDtoArray = new ArrayList<>();
+        for (SettlementResult settlementResult : mySettlementResults.getContent()) {
+            resultDtoArray.add(ExpensePreviewRes.of(settlementResult.getExpense()));
+        }
+        return ResponseEntity.ok(ApiResponse.onSuccess(resultDtoArray));
+    }
+
+    // ** 검토
+    // 내림차순 정렬 기준 : createdAt
+    public Pageable getDescSortPageable(Pageable pageable) {
+        return PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                Sort.by(Sort.Direction.DESC, "createdAt")
+        );
+    }
+
 
     // S3 이미지 업로드
     public List<TripImage> uploadExpenseImages(List<MultipartFile> images) throws IOException {
