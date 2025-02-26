@@ -1,9 +1,8 @@
-package com.lets.go.right.now.domain.expense.repository;
+package com.lets.go.right.now.domain.settlement.repository;
 
 import com.lets.go.right.now.domain.expense.entity.Expense;
-import com.lets.go.right.now.domain.expense.entity.SettlementResult;
+import com.lets.go.right.now.domain.settlement.entity.SettlementResult;
 import java.util.List;
-import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

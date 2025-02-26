@@ -1,5 +1,6 @@
-package com.lets.go.right.now.domain.expense.entity;
+package com.lets.go.right.now.domain.settlement.entity;
 
+import com.lets.go.right.now.domain.expense.entity.Expense;
 import com.lets.go.right.now.domain.member.entity.Member;
 import com.lets.go.right.now.domain.trip.entity.Trip;
 import com.lets.go.right.now.global.entity.BaseEntity;

@@ -1,7 +1,7 @@
 package com.lets.go.right.now.domain.member.entity;
 
 import com.lets.go.right.now.domain.expense.entity.ExcludedMember;
-import com.lets.go.right.now.domain.expense.entity.SettlementResult;
+import com.lets.go.right.now.domain.settlement.entity.SettlementResult;
 import com.lets.go.right.now.domain.member.dto.JoinReq;
 import com.lets.go.right.now.domain.trip.entity.ScrappedTrip;
 import com.lets.go.right.now.domain.trip.entity.TripMember;
