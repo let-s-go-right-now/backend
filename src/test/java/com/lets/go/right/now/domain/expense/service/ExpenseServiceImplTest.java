@@ -11,7 +11,7 @@ import com.lets.go.right.now.domain.member.entity.Member;
 import com.lets.go.right.now.domain.member.repository.MemberRepository;
 import com.lets.go.right.now.domain.trip.entity.Trip;
 import com.lets.go.right.now.domain.trip.entity.TripMember;
-import com.lets.go.right.now.domain.trip.repository.TripMemberRepository;
+import com.lets.go.right.now.domain.tripMember.repository.TripMemberRepository;
 import com.lets.go.right.now.domain.trip.repository.TripRepository;
 import java.io.IOException;
 import java.time.LocalDate;

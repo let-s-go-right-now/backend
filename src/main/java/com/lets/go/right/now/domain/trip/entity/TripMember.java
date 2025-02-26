@@ -1,8 +1,11 @@
 package com.lets.go.right.now.domain.trip.entity;
 
 import com.lets.go.right.now.domain.member.entity.Member;
+import com.lets.go.right.now.domain.tripMember.enums.Status;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -30,4 +33,13 @@ public class TripMember {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "trip_id")
     private Trip trip;
+
+    @Enumerated(value = EnumType.STRING)
+    private Status settlementStatus;
+
+    // === 편의 메소드 === //
+    public void changeStatus(Status status) {
+        this.settlementStatus = status;
+    }
+
 }
