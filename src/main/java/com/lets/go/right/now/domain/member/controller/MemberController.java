@@ -1,5 +1,6 @@
 package com.lets.go.right.now.domain.member.controller;
 
+import com.lets.go.right.now.domain.member.dto.AccountReq;
 import com.lets.go.right.now.domain.member.dto.JoinReq;
 import com.lets.go.right.now.domain.member.dto.LoinReq;
 import com.lets.go.right.now.domain.member.service.MemberService;
@@ -7,6 +8,7 @@ import jakarta.validation.Valid;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -37,5 +39,13 @@ public class MemberController {
             @RequestParam(value = "image", required = false) MultipartFile image,
             @Valid @ModelAttribute JoinReq joinReq) throws IOException {
         return memberService.join(joinReq, image);
+    }
+
+    /**
+     * 계좌 번호 요청
+     */
+    @GetMapping("/account-number")
+    public ResponseEntity<?> getAccountNumber(@RequestBody AccountReq accountReq) {
+        return memberService.getAccountNumber(accountReq);
     }
 }

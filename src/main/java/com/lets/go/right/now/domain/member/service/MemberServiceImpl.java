@@ -1,5 +1,6 @@
 package com.lets.go.right.now.domain.member.service;
 
+import com.lets.go.right.now.domain.member.dto.AccountReq;
 import com.lets.go.right.now.domain.member.dto.JoinReq;
 import com.lets.go.right.now.domain.member.dto.LoginRes;
 import com.lets.go.right.now.domain.member.dto.LoinReq;
@@ -12,6 +13,7 @@ import com.lets.go.right.now.global.response.ApiResponse;
 import com.lets.go.right.now.global.s3.service.S3Service;
 import jakarta.transaction.Transactional;
 import java.io.IOException;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -72,5 +74,12 @@ public class MemberServiceImpl implements MemberService{
                 .body(ApiResponse.onSuccess("회원 가입에 성공 하였습니다."));
     }
 
-
+    /**
+     * 계좌 번호 얻어 오기
+     */
+    @Override
+    public ResponseEntity<?> getAccountNumber(AccountReq accountReq) {
+        Member member = memberRepository.getMemberByEmail(accountReq.userEmail());
+        return ResponseEntity.ok(ApiResponse.onSuccess(member.getAccountNumber()));
+    }
 }
