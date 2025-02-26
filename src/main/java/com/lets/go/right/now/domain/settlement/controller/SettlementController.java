@@ -1,6 +1,6 @@
 package com.lets.go.right.now.domain.settlement.controller;
 
-import com.lets.go.right.now.domain.settlement.dto.PrepaymentCreateReq;
+import com.lets.go.right.now.domain.settlement.dto.PaymentCreateReq;
 import com.lets.go.right.now.domain.settlement.service.SettlementService;
 import com.lets.go.right.now.global.jwt.dto.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,16 @@ public class SettlementController {
     public ResponseEntity<?> createPrepayment(
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
             @PathVariable("trip_id") Long tripId,
-            @RequestBody PrepaymentCreateReq prepaymentCreateReq) {
-        return settlementService.createPrepayment(prepaymentCreateReq, tripId, customUserDetails.getEmail());
+            @RequestBody PaymentCreateReq paymentCreateReq) {
+        return settlementService.createPrepayment(paymentCreateReq, tripId, customUserDetails.getEmail());
+    }
+
+    @PostMapping("{trip_id}")
+    public ResponseEntity<?> createSettlementStatus(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
+            @PathVariable("trip_id") Long tripId,
+            @RequestBody PaymentCreateReq paymentCreateReq) {
+        return settlementService.createSettlementStatus(
+                paymentCreateReq, tripId, customUserDetails.getEmail());
     }
 }
