@@ -40,6 +40,7 @@ public enum ErrorStatus implements BaseCode {
 
 	// Trip Error
 	_TRIP_NOT_FOUND(HttpStatus.NOT_FOUND, "TRIP4001", "해당하는 여행이 존재 하지 않습니다."),
+	_TRIP_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "TRIPMEMBER4001", "해당 회원은 해당 여행의 회원이 아닙니다."),
 
 	// settlement Error
 	_SETTLEMENT_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "SETTLEMENT4001", "지출에 참여하는 회원이 존재하지 않습니다."),
