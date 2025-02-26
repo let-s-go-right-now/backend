@@ -1,6 +1,6 @@
 package com.lets.go.right.now.domain.trip.entity;
 
-import com.lets.go.right.now.domain.expense.entity.SettlementResult;
+import com.lets.go.right.now.domain.settlement.entity.SettlementResult;
 import com.lets.go.right.now.domain.member.entity.Member;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
