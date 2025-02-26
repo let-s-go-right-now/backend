@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -139,6 +140,15 @@ public class ExpenseServiceImpl implements ExpenseService{
 
         return ResponseEntity.ok(ApiResponse.onSuccess(resultDto));
     }
+
+    /**
+     * 내가 포함된 지출 보기
+     */
+    @Override
+    public ResponseEntity<?> getMyExpenses(Long tripId, String email, int page, int size) {
+        return null;
+    }
+
 
     // S3 이미지 업로드
     public List<TripImage> uploadExpenseImages(List<MultipartFile> images) throws IOException {
