@@ -71,7 +71,7 @@ public class ExpenseController {
     @GetMapping("{trip_id}/mine")
     public ResponseEntity<?> getMyExpenses(
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
-            @PathVariable("{trip_id}") Long tripId,
+            @PathVariable("trip_id") Long tripId,
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "4") int size) {
         return expenseService.getMyExpenses(tripId, customUserDetails.getEmail(), page, size);
