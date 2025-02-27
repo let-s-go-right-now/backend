@@ -15,15 +15,20 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.*;
 
+/**
+ * <개인별 지출>
+ * 지출을 개인별 지출로 분리
+ * -> 어떤 여행에서 누구에게 얼만큼 보내야 하는 지
+ */
 @Entity
 @Getter
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "Settlement-Result")
-public class SettlementResult extends BaseEntity {
+@Table(name = "personal_spending")
+public class PersonalSpending extends BaseEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "settlement_result_id")
+    @Column(name = "personal_spending_id")
     private Long id;
     private Integer amount;
 
@@ -45,9 +50,9 @@ public class SettlementResult extends BaseEntity {
     private Expense expense;
 
     // == 편의 메소드 == //
-    public static SettlementResult toEntity(
+    public static PersonalSpending toEntity(
             Trip trip, Expense expense, Integer amount, Member sender, Member receiver) {
-        return SettlementResult.builder()
+        return PersonalSpending.builder()
                 .trip(trip)
                 .expense(expense)
                 .amount(amount)

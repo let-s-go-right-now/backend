@@ -3,8 +3,8 @@ package com.lets.go.right.now.domain.settlement.service;
 import com.lets.go.right.now.domain.member.entity.Member;
 import com.lets.go.right.now.domain.member.repository.MemberRepository;
 import com.lets.go.right.now.domain.settlement.dto.PaymentCreateReq;
-import com.lets.go.right.now.domain.settlement.entity.SettlementResult;
-import com.lets.go.right.now.domain.settlement.repository.SettlementResultRepository;
+import com.lets.go.right.now.domain.settlement.entity.PersonalSpending;
+import com.lets.go.right.now.domain.settlement.repository.PersonalSpendingRepository;
 import com.lets.go.right.now.domain.trip.entity.Trip;
 import com.lets.go.right.now.domain.trip.repository.TripRepository;
 import com.lets.go.right.now.global.response.ApiResponse;
@@ -17,12 +17,12 @@ import org.springframework.stereotype.Service;
 @Transactional
 @RequiredArgsConstructor
 public class SettlementServiceImpl implements SettlementService {
-    private final SettlementResultRepository settlementResultRepository;
+    private final PersonalSpendingRepository personalSpendingRepository;
     private final TripRepository tripRepository;
     private final MemberRepository memberRepository;
 
     /**
-     * 미리 걷은 돈 정보 기록
+     * 미리 걷은 돈 정보 기록 - 수정 필요
      */
     @Override
     public ResponseEntity<?> createPrepayment(
@@ -34,15 +34,15 @@ public class SettlementServiceImpl implements SettlementService {
         // 3. 수신자 조회
         Member receiver = memberRepository.getMemberByEmail(paymentCreateReq.receiverEmail());
         // 4. 정산 금액(음수) 생성
-        SettlementResult settlementResult =
-                SettlementResult.toEntity(
+        PersonalSpending personalSpending =
+                PersonalSpending.toEntity(
                         trip, null, -paymentCreateReq.amount(), sender, receiver);
-        settlementResultRepository.save(settlementResult);
+        personalSpendingRepository.save(personalSpending);
         return ResponseEntity.ok(ApiResponse.onSuccess("미리 정산한 금액이 저장되었습니다."));
     }
 
     /**
-     * 정산 현황 기록
+     * 정산 현황 기록 - 수정 필요
      */
     @Override
     public ResponseEntity<?> createSettlementStatus(
