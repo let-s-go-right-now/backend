@@ -1,6 +1,6 @@
 package com.lets.go.right.now.domain.trip.entity;
 
-import com.lets.go.right.now.domain.settlement.entity.SettlementResult;
+import com.lets.go.right.now.domain.settlement.entity.PersonalSpending;
 import com.lets.go.right.now.domain.member.entity.Member;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -46,5 +46,5 @@ public class Trip {
     // 정산 결과들
     @Builder.Default
     @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL)
-    List<SettlementResult> settlementResults = new ArrayList<>();
+    List<PersonalSpending> personalSpendings = new ArrayList<>();
 }

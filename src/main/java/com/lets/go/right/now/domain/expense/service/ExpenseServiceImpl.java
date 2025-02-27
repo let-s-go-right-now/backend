@@ -5,11 +5,11 @@ import com.lets.go.right.now.domain.expense.dto.ExpensePreviewRes;
 import com.lets.go.right.now.domain.expense.dto.ExpenseViewRes;
 import com.lets.go.right.now.domain.expense.entity.ExcludedMember;
 import com.lets.go.right.now.domain.expense.entity.Expense;
-import com.lets.go.right.now.domain.settlement.entity.SettlementResult;
+import com.lets.go.right.now.domain.settlement.entity.PersonalSpending;
 import com.lets.go.right.now.domain.expense.entity.TripImage;
 import com.lets.go.right.now.domain.expense.repository.ExcludedMemberRepository;
 import com.lets.go.right.now.domain.expense.repository.ExpenseRepository;
-import com.lets.go.right.now.domain.settlement.repository.SettlementResultRepository;
+import com.lets.go.right.now.domain.settlement.repository.PersonalSpendingRepository;
 import com.lets.go.right.now.domain.expense.repository.TripImageRepository;
 import com.lets.go.right.now.domain.member.entity.Member;
 import com.lets.go.right.now.domain.member.repository.MemberRepository;
@@ -33,7 +33,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -44,7 +43,7 @@ public class ExpenseServiceImpl implements ExpenseService{
     private final TripMemberRepository tripMemberRepository;
     private final MemberRepository memberRepository;
     private final TripImageRepository tripImageRepository;
-    private final SettlementResultRepository settlementResultRepository;
+    private final PersonalSpendingRepository personalSpendingRepository;
     private final ExcludedMemberRepository excludedMemberRepository;
     private final S3Service s3Service;
 
@@ -113,11 +112,11 @@ public class ExpenseServiceImpl implements ExpenseService{
         // 4. 기존 지출 제외 멤버 정보 제거
         excludedMemberRepository.deleteByExpenseId(expense.getId());
         // 5. 기존 정산 결과 삭제
-        settlementResultRepository.deleteByExpenseId(expense.getId());
+        personalSpendingRepository.deleteByExpenseId(expense.getId());
         // 6. 지출 제외 멤버 정보 저장
         List<Member> excludedMembers = saveExcludedMember(expenseCreateReq.excludedMember(), expense);
         // 7. 정산 결과에 반영
-        saveSettlement(expense.getTrip(), expense, payer, excludedMembers);
+        saveMemberSpending(expense.getTrip(), expense, payer, excludedMembers);
         return ResponseEntity.ok(ApiResponse.onSuccess("지출 내역이 수정 되었습니다."));
     }
 
@@ -136,8 +135,8 @@ public class ExpenseServiceImpl implements ExpenseService{
         }
         // 3. 지출에 참여중인 회원 정보 조회
         // 정산 결과 돈을 보내야 하는 사람들이 정산에 포함된 사람
-        List<SettlementResult> settlementResults = settlementResultRepository.findByExpense(expense);
-        List<Member> expenseParticipants = settlementResults.stream().map(SettlementResult::getSender).toList();
+        List<PersonalSpending> personalSpendingList = personalSpendingRepository.findByExpense(expense);
+        List<Member> expenseParticipants = personalSpendingList.stream().map(PersonalSpending::getSender).toList();
 
         // 4. 반환 DTO 생성 및 반환
         ExpenseViewRes resultDto = ExpenseViewRes.of(expense, expenseImageUrls, expense.getPayer(),
@@ -157,13 +156,13 @@ public class ExpenseServiceImpl implements ExpenseService{
         Pageable descSortPageable = getDescSortPageable(pageRequest);
         // 1. 연관된 지출 조회 - 정산 결과 조회
         // 1.1. 여행과 연관되고, 회원이 sender로 포함되었으며, expense가 null이 아닌 지출 조회
-        Page<SettlementResult> mySettlementResults = settlementResultRepository
-                .findMySettlementResults(tripId, member.getId(), descSortPageable);
+        Page<PersonalSpending> myPersonaSpending = personalSpendingRepository
+                .findMyPersonalSpending(tripId, member.getId(), descSortPageable);
 
         // 2. 반환 DTO 생성
         ArrayList<ExpensePreviewRes> resultDtoArray = new ArrayList<>();
-        for (SettlementResult settlementResult : mySettlementResults.getContent()) {
-            resultDtoArray.add(ExpensePreviewRes.of(settlementResult.getExpense()));
+        for (PersonalSpending personalSpending : myPersonaSpending.getContent()) {
+            resultDtoArray.add(ExpensePreviewRes.of(personalSpending.getExpense()));
         }
         return ResponseEntity.ok(ApiResponse.onSuccess(resultDtoArray));
     }
@@ -218,7 +217,7 @@ public class ExpenseServiceImpl implements ExpenseService{
         List<Member> excludedMembers = saveExcludedMember(expenseCreateReq.excludedMember(), expense);
 
         // 4. 정산 결과에 반영
-        saveSettlement(trip, expense, payer, excludedMembers);
+        saveMemberSpending(trip, expense, payer, excludedMembers);
     }
 
     public List<Member> saveExcludedMember(List<String> excludedMemberEmails, Expense expense) {
@@ -237,8 +236,11 @@ public class ExpenseServiceImpl implements ExpenseService{
     }
 
 
+    /**
+     * 각 회원의 개인 지출 기록
+     */
     @Transactional
-    public void saveSettlement(Trip trip, Expense expense, Member payer, List<Member> excludedMembers) {
+    public void saveMemberSpending(Trip trip, Expense expense, Member payer, List<Member> excludedMembers) {
         // 1. 여행 참여 멤버 조회
         List<TripMember> tripMembers = tripMemberRepository.findByTrip(trip);
         List<Member> participants = tripMembers.stream()
@@ -262,11 +264,12 @@ public class ExpenseServiceImpl implements ExpenseService{
 
         // 4. 참여자들에게 정산 금액 저장
         for (Member participant : actualParticipants) {
-            settlementResultRepository.save(SettlementResult.toEntity(trip,expense,settlementAmount, participant, payer));
+            personalSpendingRepository.save(PersonalSpending.toEntity(trip,expense,settlementAmount, participant, payer));
         }
 
         // 5. 결제자에게 남은 금액 포함하여 저장
-        settlementResultRepository.save(SettlementResult.toEntity(trip,expense,settlementAmount + remainingAmount, payer, payer));
+        personalSpendingRepository.save(
+                PersonalSpending.toEntity(trip,expense,settlementAmount + remainingAmount, payer, payer));
     }
 
 

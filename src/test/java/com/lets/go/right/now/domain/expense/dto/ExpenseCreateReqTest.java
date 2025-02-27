@@ -6,6 +6,7 @@ import com.lets.go.right.now.domain.member.entity.Member;
 import com.lets.go.right.now.domain.trip.entity.Trip;
 import com.lets.go.right.now.global.enums.statuscode.ErrorStatus;
 import com.lets.go.right.now.global.exception.GeneralException;
+import java.time.LocalDateTime;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -17,7 +18,7 @@ class ExpenseCreateReqTest {
     @Test
     void 정상적인_카테고리_변환_테스트() {
         ExpenseCreateReq req = new ExpenseCreateReq("저녁 식사", 20000, "맛있는 스테이크",
-                LocalDate.now(), "MEALS", "test@example.com", List.of());
+                LocalDateTime.now(), "MEALS", "test@example.com", List.of());
 
         Expense expense = ExpenseCreateReq.of(req, Trip.builder().build(), Member.builder().build());
 
@@ -27,7 +28,7 @@ class ExpenseCreateReqTest {
     @Test
     void 잘못된_카테고리_입력시_예외발생() {
         ExpenseCreateReq req = new ExpenseCreateReq("기타 지출", 5000, "예상치 못한 비용",
-                LocalDate.now(), "INVALID_CATEGORY", "test@example.com", List.of());
+                LocalDateTime.now(), "INVALID_CATEGORY", "test@example.com", List.of());
 
         GeneralException exception = assertThrows(GeneralException.class, () -> {
             ExpenseCreateReq.of(req, Trip.builder().build(), Member.builder().build());

@@ -1,7 +1,7 @@
 package com.lets.go.right.now.domain.trip.entity;
 
 import com.lets.go.right.now.domain.member.entity.Member;
-import com.lets.go.right.now.domain.tripMember.enums.Status;
+import com.lets.go.right.now.global.enums.Status;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

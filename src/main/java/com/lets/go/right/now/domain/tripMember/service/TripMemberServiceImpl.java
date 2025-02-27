@@ -5,7 +5,7 @@ import com.lets.go.right.now.domain.member.repository.MemberRepository;
 import com.lets.go.right.now.domain.trip.entity.Trip;
 import com.lets.go.right.now.domain.trip.entity.TripMember;
 import com.lets.go.right.now.domain.trip.repository.TripRepository;
-import com.lets.go.right.now.domain.tripMember.enums.Status;
+import com.lets.go.right.now.global.enums.Status;
 import com.lets.go.right.now.domain.tripMember.repository.TripMemberRepository;
 import com.lets.go.right.now.global.response.ApiResponse;
 import jakarta.transaction.Transactional;
