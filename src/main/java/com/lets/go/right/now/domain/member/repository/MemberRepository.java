@@ -12,5 +12,10 @@ public interface MemberRepository extends JpaRepository<Member,Long> {
     default Member getMemberByEmail(String email) {
         return findMemberByEmail(email).orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
     }
+
+    default Member getMemberById(Long id) {
+        return findById(id).orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+    }
+
     Optional<Member> findMemberByEmail(String email);
 }

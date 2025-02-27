@@ -2,6 +2,7 @@ package com.lets.go.right.now.domain.settlement.repository;
 
 import com.lets.go.right.now.domain.expense.entity.Expense;
 import com.lets.go.right.now.domain.settlement.entity.PersonalSpending;
+import com.lets.go.right.now.domain.trip.entity.Trip;
 import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,6 +12,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface PersonalSpendingRepository extends JpaRepository<PersonalSpending, Long> {
+    List<PersonalSpending> findByTrip(Trip trip);
+
     List<PersonalSpending> findByExpense(Expense expense);
 
     @Modifying

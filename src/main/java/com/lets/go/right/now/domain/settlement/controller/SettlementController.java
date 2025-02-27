@@ -18,6 +18,17 @@ import org.springframework.web.bind.annotation.RestController;
 public class SettlementController {
     private final SettlementService settlementService;
 
+    /**
+     * 여행 지출 정산 하기
+     */
+    @PostMapping("{trip_id}")
+    public ResponseEntity<?> calculateTravelSettlement(@PathVariable("trip_id") Long tripId) {
+        return settlementService.calculateTravelSettlement(tripId);
+    }
+
+    /**
+     * 미리 걷은 돈 기록하기
+     */
     @PostMapping("{trip_id}/prepayment")
     public ResponseEntity<?> createPrepayment(
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
@@ -26,12 +37,15 @@ public class SettlementController {
         return settlementService.createPrepayment(paymentCreateReq, tripId, customUserDetails.getEmail());
     }
 
-    @PostMapping("{trip_id}")
-    public ResponseEntity<?> createSettlementStatus(
+    /**
+     * 송금 하기(송금 정보 저장 하기)
+     */
+    @PostMapping("{trip_id}/send")
+    public ResponseEntity<?> sendTravelSettlement(
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
             @PathVariable("trip_id") Long tripId,
             @RequestBody PaymentCreateReq paymentCreateReq) {
-        return settlementService.createSettlementStatus(
+        return settlementService.sendTravelSettlement(
                 paymentCreateReq, tripId, customUserDetails.getEmail());
     }
 }
