@@ -63,4 +63,8 @@ public class TravelSettlement extends BaseEntity {
                 .settlementStatus(Status.PROGRESS)
                 .build();
     }
+
+    public void addAmount(Integer amount) {
+        this.amount += amount;
+    }
 }

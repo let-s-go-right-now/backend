@@ -9,6 +9,8 @@ import com.lets.go.right.now.domain.settlement.repository.PersonalSpendingReposi
 import com.lets.go.right.now.domain.settlement.repository.TravelSettlementRepository;
 import com.lets.go.right.now.domain.trip.entity.Trip;
 import com.lets.go.right.now.domain.trip.repository.TripRepository;
+import com.lets.go.right.now.global.enums.statuscode.ErrorStatus;
+import com.lets.go.right.now.global.exception.GeneralException;
 import com.lets.go.right.now.global.response.ApiResponse;
 import jakarta.transaction.Transactional;
 import java.util.List;
@@ -60,23 +62,27 @@ public class SettlementServiceImpl implements SettlementService {
     }
 
     /**
-     * 미리 걷은 돈 정보 기록 - 수정 필요
+     * 미리 걷은 돈 반영
      */
     @Override
     public ResponseEntity<?> createPrepayment(
             PaymentCreateReq paymentCreateReq, Long tripId, String senderEmail) {
         // 1. 여행 조회
         Trip trip = tripRepository.getTripById(tripId);
-        // 2. 송신자 조회
+        // 2. 송신자 조회(본인)
         Member sender = memberRepository.getMemberByEmail(senderEmail);
-        // 3. 수신자 조회
+        // 3. 수신자 조회(미리 돈을 받은 자)
         Member receiver = memberRepository.getMemberByEmail(paymentCreateReq.receiverEmail());
-        // 4. 정산 금액(음수) 생성
-        PersonalSpending personalSpending =
-                PersonalSpending.toEntity(
-                        trip, null, -paymentCreateReq.amount(), sender, receiver);
-        personalSpendingRepository.save(personalSpending);
-        return ResponseEntity.ok(ApiResponse.onSuccess("미리 정산한 금액이 저장되었습니다."));
+
+        // 미리 걷은 돈을 기록하는 시점은 여행 지출 정산이 완료 된 이후
+        // -> 해당하는 여행 지출 정산 엔티티 조회 후 미리 걷은 돈 반영
+        TravelSettlement travelSettlement = travelSettlementRepository.findTravelSettlementInfo(trip, sender, receiver)
+                .orElseThrow(() -> new GeneralException(ErrorStatus._TRAVEL_SETTLEMENT_NOT_FOUND));
+
+        // 미리 걷은 금액(음수)만큼 차감
+        travelSettlement.addAmount(-paymentCreateReq.amount());
+
+        return ResponseEntity.ok(ApiResponse.onSuccess("미리 정산한 금액이 반영 되었습니다."));
     }
 
     /**
