@@ -3,6 +3,8 @@ package com.lets.go.right.now.domain.settlement.repository;
 import com.lets.go.right.now.domain.member.entity.Member;
 import com.lets.go.right.now.domain.settlement.entity.TravelSettlement;
 import com.lets.go.right.now.domain.trip.entity.Trip;
+import com.lets.go.right.now.global.enums.statuscode.ErrorStatus;
+import com.lets.go.right.now.global.exception.GeneralException;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -15,4 +17,9 @@ public interface TravelSettlementRepository extends JpaRepository<TravelSettleme
             + "AND ts.receiver = :receiver")
     Optional<TravelSettlement> findTravelSettlementInfo(
             @Param("trip") Trip trip, @Param("sender") Member sender, @Param("receiver") Member receiver);
+
+    default TravelSettlement getById(Long travelSettlementId) {
+        return findById(travelSettlementId)
+                .orElseThrow(() -> new GeneralException(ErrorStatus._TRAVEL_SETTLEMENT_NOT_FOUND));
+    }
 }
