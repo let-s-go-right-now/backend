@@ -36,6 +36,7 @@ public class TravelSettlement extends BaseEntity {
     @Column(name = "travel_settlement_id")
     private Long id;
     private Integer amount;
+
     @Enumerated(value = EnumType.STRING)
     private Status settlementStatus; // 정산 현황 PROGRESS, DONE
 
@@ -66,5 +67,9 @@ public class TravelSettlement extends BaseEntity {
 
     public void addAmount(Integer amount) {
         this.amount += amount;
+    }
+
+    public void changeStatus(Status status) {
+        this.settlementStatus = status;
     }
 }

@@ -41,12 +41,9 @@ public class SettlementController {
     /**
      * 송금 하기(송금 정보 저장 하기)
      */
-    @PostMapping("{trip_id}/send")
+    @PutMapping("{travel_settlement_id}/send")
     public ResponseEntity<?> sendTravelSettlement(
-            @AuthenticationPrincipal CustomUserDetails customUserDetails,
-            @PathVariable("trip_id") Long tripId,
-            @RequestBody PaymentCreateReq paymentCreateReq) {
-        return settlementService.sendTravelSettlement(
-                paymentCreateReq, tripId, customUserDetails.getEmail());
+            @PathVariable("travel_settlement_id") Long travelSettlementId) {
+        return settlementService.sendTravelSettlement(travelSettlementId);
     }
 }

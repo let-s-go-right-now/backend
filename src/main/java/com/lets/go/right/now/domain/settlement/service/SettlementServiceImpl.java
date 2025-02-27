@@ -9,6 +9,7 @@ import com.lets.go.right.now.domain.settlement.repository.PersonalSpendingReposi
 import com.lets.go.right.now.domain.settlement.repository.TravelSettlementRepository;
 import com.lets.go.right.now.domain.trip.entity.Trip;
 import com.lets.go.right.now.domain.trip.repository.TripRepository;
+import com.lets.go.right.now.global.enums.Status;
 import com.lets.go.right.now.global.enums.statuscode.ErrorStatus;
 import com.lets.go.right.now.global.exception.GeneralException;
 import com.lets.go.right.now.global.response.ApiResponse;
@@ -89,15 +90,11 @@ public class SettlementServiceImpl implements SettlementService {
      * 정산 현황 기록 - 수정 필요
      */
     @Override
-    public ResponseEntity<?> sendTravelSettlement(
-            PaymentCreateReq paymentCreateReq, Long tripId, String senderEmail) {
-        // 1. 여행 조회
-        Trip trip = tripRepository.getTripById(tripId);
-        // 2. 송신자 조회
-        Member sender = memberRepository.getMemberByEmail(senderEmail);
-        // 3. 수신자 조회
-        Member receiver = memberRepository.getMemberByEmail(paymentCreateReq.receiverEmail());
+    public ResponseEntity<?> sendTravelSettlement(Long travelSettlementId) {
+        TravelSettlement travelSettlement = travelSettlementRepository.getById(travelSettlementId);
 
-        return null;
+        travelSettlement.changeStatus(Status.DONE);
+
+        return ResponseEntity.ok(ApiResponse.onSuccess("정산 완료 처리 되었습니다."));
     }
 }
