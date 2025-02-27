@@ -3,6 +3,7 @@ package com.lets.go.right.now.domain.settlement.entity;
 import com.lets.go.right.now.domain.member.entity.Member;
 import com.lets.go.right.now.domain.trip.entity.Trip;
 import com.lets.go.right.now.global.entity.BaseEntity;
+import com.lets.go.right.now.global.enums.Status;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -18,17 +19,22 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+/**
+ * <여행 정산>
+ * 여행에서 발생한 모든 지출의 정산 금액
+ */
 @Entity
 @Getter
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "settlement_status")
-public class SettlementStatus extends BaseEntity {
+@Table(name = "travel_settlement")
+public class TravelSettlement extends BaseEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "settlement_status_id")
+    @Column(name = "travel_settlement_id")
     private Long id;
     private Integer amount;
+    private Status settlementStatus; // 정산 현황 PROGRESS, DONE
 
     // == 연관 관계 설정 == //
     @ManyToOne(fetch = FetchType.LAZY)
@@ -44,9 +50,9 @@ public class SettlementStatus extends BaseEntity {
     private Member receiver;
 
     // == 편의 메소드 == //
-    public static SettlementStatus toEntity(
+    public static TravelSettlement toEntity(
             Trip trip, Integer amount, Member sender, Member receiver) {
-        return SettlementStatus.builder()
+        return TravelSettlement.builder()
                 .trip(trip)
                 .amount(amount)
                 .sender(sender)
