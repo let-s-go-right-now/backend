@@ -46,7 +46,10 @@ public enum ErrorStatus implements BaseCode {
 	_SETTLEMENT_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "SETTLEMENT4001", "지출에 참여하는 회원이 존재하지 않습니다."),
 
 	// Category Error
-	_CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "CATEGORY4001", "해당하는 카테고리가 존재 하지 않습니다.");
+	_CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "CATEGORY4001", "해당하는 카테고리가 존재 하지 않습니다."),
+
+	// Travel Settlement Error
+	_TRAVEL_SETTLEMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "TRAVELSETTLEMENT4001", "해당하는 정산 현황이 존재 하지 않습니다.");
 
 
 	private final HttpStatus httpStatus;
