@@ -22,6 +22,16 @@ public class SettlementServiceImpl implements SettlementService {
     private final MemberRepository memberRepository;
 
     /**
+     * 여행 금액 정산 하기
+     */
+    @Override
+    public ResponseEntity<?> calculateTravelSettlement(Long tripId) {
+        // 개인별 지출을 종합하여, 최종 정산 금액 계산
+        // 누가 누구에게 총 얼마를 송금해야 하는지
+        return null;
+    }
+
+    /**
      * 미리 걷은 돈 정보 기록 - 수정 필요
      */
     @Override
@@ -45,7 +55,7 @@ public class SettlementServiceImpl implements SettlementService {
      * 정산 현황 기록 - 수정 필요
      */
     @Override
-    public ResponseEntity<?> createSettlementStatus(
+    public ResponseEntity<?> sendTravelSettlement(
             PaymentCreateReq paymentCreateReq, Long tripId, String senderEmail) {
         // 1. 여행 조회
         Trip trip = tripRepository.getTripById(tripId);

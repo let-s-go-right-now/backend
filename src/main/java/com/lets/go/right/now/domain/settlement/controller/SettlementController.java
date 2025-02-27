@@ -26,12 +26,20 @@ public class SettlementController {
         return settlementService.createPrepayment(paymentCreateReq, tripId, customUserDetails.getEmail());
     }
 
-    @PostMapping("{trip_id}")
-    public ResponseEntity<?> createSettlementStatus(
+    /**
+     * 송금 하기(송금 정보 저장 하기)
+     */
+    @PostMapping("{trip_id}/send")
+    public ResponseEntity<?> sendTravelSettlement(
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
             @PathVariable("trip_id") Long tripId,
             @RequestBody PaymentCreateReq paymentCreateReq) {
-        return settlementService.createSettlementStatus(
+        return settlementService.sendTravelSettlement(
                 paymentCreateReq, tripId, customUserDetails.getEmail());
+    }
+
+    @PostMapping("{trip_id}/")
+    public ResponseEntity<?> calculateTravelSettlement(@PathVariable("trip_id") Long tripId) {
+        return settlementService.calculateTravelSettlement(tripId);
     }
 }
