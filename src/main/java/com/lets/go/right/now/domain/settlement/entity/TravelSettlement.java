@@ -6,6 +6,8 @@ import com.lets.go.right.now.global.entity.BaseEntity;
 import com.lets.go.right.now.global.enums.Status;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -34,6 +36,7 @@ public class TravelSettlement extends BaseEntity {
     @Column(name = "travel_settlement_id")
     private Long id;
     private Integer amount;
+    @Enumerated(value = EnumType.STRING)
     private Status settlementStatus; // 정산 현황 PROGRESS, DONE
 
     // == 연관 관계 설정 == //
@@ -57,6 +60,7 @@ public class TravelSettlement extends BaseEntity {
                 .amount(amount)
                 .sender(sender)
                 .receiver(receiver)
+                .settlementStatus(Status.PROGRESS)
                 .build();
     }
 }

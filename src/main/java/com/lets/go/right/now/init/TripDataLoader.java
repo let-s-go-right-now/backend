@@ -9,14 +9,16 @@ import com.lets.go.right.now.domain.trip.repository.TripRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.stereotype.Component;
 
-//@Component
-//@Order(1)
+@Component
+@Order(1)
 @RequiredArgsConstructor
 public class TripDataLoader implements CommandLineRunner {
 
