@@ -3,17 +3,21 @@ package com.lets.go.right.now.domain.settlement.service;
 import com.lets.go.right.now.domain.member.entity.Member;
 import com.lets.go.right.now.domain.member.repository.MemberRepository;
 import com.lets.go.right.now.domain.settlement.dto.PaymentCreateReq;
+import com.lets.go.right.now.domain.settlement.dto.TravelSettlementResult;
 import com.lets.go.right.now.domain.settlement.entity.PersonalSpending;
 import com.lets.go.right.now.domain.settlement.entity.TravelSettlement;
 import com.lets.go.right.now.domain.settlement.repository.PersonalSpendingRepository;
 import com.lets.go.right.now.domain.settlement.repository.TravelSettlementRepository;
 import com.lets.go.right.now.domain.trip.entity.Trip;
+import com.lets.go.right.now.domain.trip.entity.TripMember;
 import com.lets.go.right.now.domain.trip.repository.TripRepository;
+import com.lets.go.right.now.domain.tripMember.repository.TripMemberRepository;
 import com.lets.go.right.now.global.enums.Status;
 import com.lets.go.right.now.global.enums.statuscode.ErrorStatus;
 import com.lets.go.right.now.global.exception.GeneralException;
 import com.lets.go.right.now.global.response.ApiResponse;
 import jakarta.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -28,6 +32,7 @@ public class SettlementServiceImpl implements SettlementService {
     private final PersonalSpendingRepository personalSpendingRepository;
     private final TravelSettlementRepository travelSettlementRepository;
     private final TripRepository tripRepository;
+    private final TripMemberRepository tripMemberRepository;
     private final MemberRepository memberRepository;
 
     /**
@@ -96,5 +101,28 @@ public class SettlementServiceImpl implements SettlementService {
         travelSettlement.changeStatus(Status.DONE);
 
         return ResponseEntity.ok(ApiResponse.onSuccess("정산 완료 처리 되었습니다."));
+    }
+
+    /**
+     * 여행 지출 결과 보기
+     */
+    @Override
+    public ResponseEntity<?> getTravelSettlementResults(String email, Long travelId) {
+        // 회원 조회
+        Member member = memberRepository.getMemberByEmail(email);
+        // 여행 조회
+        Trip trip = tripRepository.getTripById(travelId);
+        // 해당 회원이 여행의 일원인지 확인
+        TripMember tripMember = tripMemberRepository.getByTripAndMember(trip, member);
+
+        // 나와 연관되어 있으면서, 본인 부담금은 포함하지 않는 레코드 조회
+        List<TravelSettlement> myTravelSettlement =
+                travelSettlementRepository.findMyTravelSettlement(member,trip);
+        // 반환 DTO 설계
+        ArrayList<TravelSettlementResult> resultDtoList = new ArrayList<>();
+        for (TravelSettlement travelSettlement : myTravelSettlement) {
+            resultDtoList.add(TravelSettlementResult.of(travelSettlement));
+        }
+        return ResponseEntity.ok(ApiResponse.onSuccess(resultDtoList));
     }
 }
