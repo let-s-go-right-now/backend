@@ -5,6 +5,7 @@ import com.lets.go.right.now.domain.settlement.entity.TravelSettlement;
 import com.lets.go.right.now.domain.trip.entity.Trip;
 import com.lets.go.right.now.global.enums.statuscode.ErrorStatus;
 import com.lets.go.right.now.global.exception.GeneralException;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -22,4 +23,12 @@ public interface TravelSettlementRepository extends JpaRepository<TravelSettleme
         return findById(travelSettlementId)
                 .orElseThrow(() -> new GeneralException(ErrorStatus._TRAVEL_SETTLEMENT_NOT_FOUND));
     }
+
+    /**
+     * 해당 회원과 연관된 정산 결과 조회
+     */
+    @Query("SELECT ts FROM TravelSettlement ts "
+            + "WHERE (ts.sender = :member OR ts.receiver = :member) "
+            + "AND ts.sender != ts.receiver AND ts.trip = :trip")
+    List<TravelSettlement> findMyTravelSettlement(@Param("member") Member member, @Param("trip") Trip trip);
 }

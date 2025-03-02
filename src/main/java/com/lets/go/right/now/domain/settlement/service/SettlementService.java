@@ -10,4 +10,6 @@ public interface SettlementService {
     ResponseEntity<?> sendTravelSettlement(Long travelSettlementId);
 
     ResponseEntity<?> calculateTravelSettlement(Long tripId);
+
+    ResponseEntity<?> getTravelSettlementResults(String email, Long travelId);
 }
