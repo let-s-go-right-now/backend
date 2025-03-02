@@ -44,6 +44,7 @@ public enum ErrorStatus implements BaseCode {
 
 	// settlement Error
 	_SETTLEMENT_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "SETTLEMENT4001", "지출에 참여하는 회원이 존재하지 않습니다."),
+	_SETTLEMENT_NOT_FINISH(HttpStatus.FORBIDDEN, "SETTLEMENT4002", "요청한 회원의 아직 정산이 종료되지 않았습니다."),
 
 	// Category Error
 	_CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "CATEGORY4001", "해당하는 카테고리가 존재 하지 않습니다."),

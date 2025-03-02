@@ -1,10 +1,13 @@
 package com.lets.go.right.now.domain.settlement.service;
 
+import com.lets.go.right.now.domain.expense.dto.MemberProfileViewRes;
 import com.lets.go.right.now.domain.member.entity.Member;
 import com.lets.go.right.now.domain.member.repository.MemberRepository;
 import com.lets.go.right.now.domain.settlement.dto.PaymentCreateReq;
 import com.lets.go.right.now.domain.settlement.dto.TravelSettlementResult;
-import com.lets.go.right.now.domain.settlement.dto.TravelSettlementResultReq;
+import com.lets.go.right.now.domain.settlement.dto.TravelSettlementResultRes;
+import com.lets.go.right.now.domain.settlement.dto.TravelSettlementStatus;
+import com.lets.go.right.now.domain.settlement.dto.TravelSettlementStatusRes;
 import com.lets.go.right.now.domain.settlement.entity.PersonalSpending;
 import com.lets.go.right.now.domain.settlement.entity.TravelSettlement;
 import com.lets.go.right.now.domain.settlement.repository.PersonalSpendingRepository;
@@ -19,6 +22,7 @@ import com.lets.go.right.now.global.exception.GeneralException;
 import com.lets.go.right.now.global.response.ApiResponse;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -108,11 +112,11 @@ public class SettlementServiceImpl implements SettlementService {
      * 여행 지출 결과 보기
      */
     @Override
-    public ResponseEntity<?> getTravelSettlementResults(String email, Long travelId) {
+    public ResponseEntity<?> getTravelSettlementResults(String email, Long tripId) {
         // 회원 조회
         Member member = memberRepository.getMemberByEmail(email);
         // 여행 조회
-        Trip trip = tripRepository.getTripById(travelId);
+        Trip trip = tripRepository.getTripById(tripId);
         // 해당 회원이 여행의 일원인지 확인
         TripMember tripMember = tripMemberRepository.getByTripAndMember(trip, member);
 
@@ -144,7 +148,7 @@ public class SettlementServiceImpl implements SettlementService {
             resultDtoList.add(TravelSettlementResult.of(travelSettlement));
         }
 
-        TravelSettlementResultReq resultDto = TravelSettlementResultReq.of(totalAmount, resultDtoList);
+        TravelSettlementResultRes resultDto = TravelSettlementResultRes.of(totalAmount, resultDtoList);
         return ResponseEntity.ok(ApiResponse.onSuccess(resultDto));
     }
 
@@ -152,16 +156,70 @@ public class SettlementServiceImpl implements SettlementService {
      * 정산 현황 확인하기
      */
     @Override
-    public ResponseEntity<?> getTravelSettlementStatus(String email, Long travelId) {
+    public ResponseEntity<?> getTravelSettlementStatus(String email, Long tripId) {
         // 1. 회원 존재 여부 확인
-
+        Member member = memberRepository.getMemberByEmail(email);
         // 2. 여행 존재 여부 확인
-
+        Trip trip = tripRepository.getTripById(tripId);
         // 3. 여행 회원 여부 확인
+        TripMember tripMember = tripMemberRepository.getByTripAndMember(trip, member);
+        // 4. 해당 회원의 정산 완료 상태 확인 - 정산 완료 이후에만 요청 가능
+        if (tripMember.getSettlementStatus().equals(Status.PROGRESS)) {
+            throw new GeneralException(ErrorStatus._SETTLEMENT_NOT_FINISH);
+        }
+        // 5. 해당 여행의 모든 정산 현황 조회 및 데이터 가공 (본인 부담금은 제외)
+        List<TravelSettlement> travelSettlements =
+                travelSettlementRepository.findMemberTravelSettlementByTrip(trip);
 
-        // 4. 해당 회원의 정산 완료 상태 확인
+        // 6. 여행에 참여한 모든 회원 조회
+        List<Member> tripMembers =
+                tripMemberRepository.findByTrip(trip).stream().map(TripMember::getMember).toList();
 
-        // 5. 해당 여행의 모든 정산 현황 조회 및 데이터 가공
-        return null;
+        // 7. 회원별 송금/수금 정보를 저장할 Map
+        Map<Member, List<TravelSettlementStatus>> settlementMap = new HashMap<>();
+
+        for (Member tm : tripMembers) {
+            List<TravelSettlementStatus> statuses = new ArrayList<>();
+
+            // 7-1. 해당 회원이 받은 돈 정리
+            List<TravelSettlement> receivedSettlements = travelSettlements.stream()
+                    .filter(ts -> ts.getReceiver().equals(tm))
+                    .toList();
+
+            if (!receivedSettlements.isEmpty()) {
+                int totalReceived = receivedSettlements.stream().mapToInt(TravelSettlement::getAmount).sum();
+                List<String> senders = receivedSettlements.stream()
+                        .map(ts -> ts.getSender().getName())
+                        .toList();
+                statuses.add(new TravelSettlementStatus(
+                        com.lets.go.right.now.domain.settlement.dto.enums.Status.RECEIVED, totalReceived, senders));
+            }
+
+            // 7-2. 해당 회원이 보낸 돈 정리
+            List<TravelSettlement> sentSettlements = travelSettlements.stream()
+                    .filter(ts -> ts.getSender().equals(tm))
+                    .toList();
+
+            if (!sentSettlements.isEmpty()) {
+                int totalSent = sentSettlements.stream().mapToInt(TravelSettlement::getAmount).sum();
+                List<String> receivers = sentSettlements.stream()
+                        .map(ts -> ts.getReceiver().getName())
+                        .toList();
+                statuses.add(new TravelSettlementStatus(
+                        com.lets.go.right.now.domain.settlement.dto.enums.Status.SEND, totalSent, receivers));
+            }
+
+            // 7-3. 회원별 정산 정보 저장
+            settlementMap.put(tm, statuses);
+        }
+
+        // 8. 최종 DTO 변환
+        List<TravelSettlementStatusRes> responseList = tripMembers.stream()
+                .map(tm -> new TravelSettlementStatusRes(
+                        MemberProfileViewRes.of(tm),
+                        settlementMap.getOrDefault(tm, new ArrayList<>())
+                ))
+                .toList();
+        return ResponseEntity.ok(ApiResponse.onSuccess(responseList));
     }
 }
