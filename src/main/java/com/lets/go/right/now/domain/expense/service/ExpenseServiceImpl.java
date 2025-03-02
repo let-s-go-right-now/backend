@@ -1,5 +1,6 @@
 package com.lets.go.right.now.domain.expense.service;
 
+import com.lets.go.right.now.domain.expense.dto.CategoryExpenseRes;
 import com.lets.go.right.now.domain.expense.dto.ExpenseCreateReq;
 import com.lets.go.right.now.domain.expense.dto.ExpensePreviewRes;
 import com.lets.go.right.now.domain.expense.dto.ExpenseViewRes;
@@ -221,14 +222,37 @@ public class ExpenseServiceImpl implements ExpenseService{
                         TravelTotalExpense.of(travelTotalAmount, memberList.size(), memberTotalExpenses)));
     }
 
-
-    /**
-     * 카테고리별 지출 금액 보기
-     */
     @Override
     public ResponseEntity<?> getCategoryReport(Long tripId) {
-        return null;
+        // 1. 여행 존재 여부 확인
+        Trip trip = tripRepository.getTripById(tripId);
+
+        // 2. 여행 연관 지출 조회, 카테고리로 분류
+        List<Expense> expenses = expenseRepository.findByTrip(trip);
+        int totalExpense = expenses.stream().mapToInt(Expense::getPrice).sum();
+
+        // 3. 카테고리별 지출액 계산
+        Map<String, Integer> expenseMap = new HashMap<>();
+        for (Expense expense : expenses) {
+            String categoryName = expense.getCategory().toString();
+            // defaultValue : 0 -> NullPointerException 방지
+            expenseMap.put(categoryName, expenseMap.getOrDefault(categoryName, 0) + expense.getPrice());
+        }
+
+        // 4. DTO 변환
+        List<CategoryExpenseRes> resultDto = expenseMap.entrySet().stream()
+                .map(entry -> {
+                    String categoryName = entry.getKey();
+                    Integer categoryAmount = entry.getValue();
+                    double percentage = ((double) categoryAmount / totalExpense) * 100; // 퍼센트 변환
+                    return CategoryExpenseRes.of(categoryName, percentage, categoryAmount);
+                })
+                .sorted(Comparator.comparingDouble(CategoryExpenseRes::percentage).reversed()) // 퍼센트 기준 내림차순 정렬
+                .toList();
+
+        return ResponseEntity.ok(ApiResponse.onSuccess(resultDto));
     }
+
 
 
     // ** 검토
