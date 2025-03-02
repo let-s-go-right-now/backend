@@ -4,10 +4,12 @@ import com.lets.go.right.now.domain.expense.dto.CategoryExpenseRes;
 import com.lets.go.right.now.domain.expense.dto.ExpenseCreateReq;
 import com.lets.go.right.now.domain.expense.dto.ExpensePreviewRes;
 import com.lets.go.right.now.domain.expense.dto.ExpenseViewRes;
+import com.lets.go.right.now.domain.expense.dto.MemberCategoryExpenseRes;
 import com.lets.go.right.now.domain.expense.entity.ExcludedMember;
 import com.lets.go.right.now.domain.expense.entity.Expense;
 import com.lets.go.right.now.domain.expense.dto.MemberTotalExpenseRes;
 import com.lets.go.right.now.domain.expense.dto.TravelTotalExpense;
+import com.lets.go.right.now.domain.expense.entity.enums.Category;
 import com.lets.go.right.now.domain.settlement.entity.PersonalSpending;
 import com.lets.go.right.now.domain.expense.entity.TripImage;
 import com.lets.go.right.now.domain.expense.repository.ExcludedMemberRepository;
@@ -191,25 +193,7 @@ public class ExpenseServiceImpl implements ExpenseService{
                 .sum();
 
         // 4. 회원별 총 지출액 계산을 위한 Map 초기화
-        Map<Member, Integer> memberExpenseMap = new HashMap<>();
-
-        for (PersonalSpending personalSpending : spendingList) {
-            Member sender = personalSpending.getSender();
-            Member receiver = personalSpending.getReceiver();
-            Integer amount = personalSpending.getAmount();
-
-            // 본인 부담금 (개인 지출)
-            if (sender.equals(receiver)) {
-                memberExpenseMap.put(sender, memberExpenseMap.getOrDefault(sender, 0) + amount);
-                continue;
-            }
-            // 수신자가 받았을 경우, 지출 금액 감소
-            else if (memberExpenseMap.containsKey(receiver)) {
-                memberExpenseMap.put(receiver, memberExpenseMap.get(receiver) - amount);
-            }
-            // 송신자가 보냈을 경우, 지출 금액 증가
-            memberExpenseMap.put(sender, memberExpenseMap.getOrDefault(sender, 0) + amount);
-        }
+        Map<Member, Integer> memberExpenseMap = calculateMemberExpense(spendingList);
 
         // 5. DTO 변환(지출액 내림차순 정렬)
         List<MemberTotalExpenseRes> memberTotalExpenses = memberList.stream()
@@ -222,6 +206,9 @@ public class ExpenseServiceImpl implements ExpenseService{
                         TravelTotalExpense.of(travelTotalAmount, memberList.size(), memberTotalExpenses)));
     }
 
+    /**
+     * 카테고리별 지출 리포트
+     */
     @Override
     public ResponseEntity<?> getCategoryReport(Long tripId) {
         // 1. 여행 존재 여부 확인
@@ -253,6 +240,54 @@ public class ExpenseServiceImpl implements ExpenseService{
         return ResponseEntity.ok(ApiResponse.onSuccess(resultDto));
     }
 
+    /**
+     * 회원별 카테고리 지출 리포트
+     */
+    @Override
+    public ResponseEntity<?> getMemberCategoryReport(Long tripId, Category category) {
+        Trip trip = tripRepository.getTripById(tripId);
+        List<PersonalSpending> personalSpendingList = personalSpendingRepository.findByTripAndCategory(trip, category);
+        List<Member> memberList = trip.getMemberList().stream().map(TripMember::getMember).toList();
+        Map<Member, Integer> memberExpenseMap = new HashMap<>();
+        for (Member member : memberList) {
+            for (PersonalSpending personalSpending : personalSpendingList) {
+                Member sender = personalSpending.getSender();
+                Integer amount = personalSpending.getAmount();
+                if (sender.equals(member)) { // 내가 보낸 돈인 경우 지출에 해당
+                    memberExpenseMap.put(sender, memberExpenseMap.getOrDefault(sender, 0) + amount);
+                }
+            }
+        }
+
+        // 4. DTO 변환 및 지출액 내림차순 정렬
+        List<MemberCategoryExpenseRes> resultDto = memberExpenseMap.entrySet().stream()
+                .map(entry -> MemberCategoryExpenseRes.of(entry.getKey(), entry.getValue()))
+                .sorted(Comparator.comparingInt(MemberCategoryExpenseRes::amount).reversed())
+                .toList();
+        return ResponseEntity.ok(ApiResponse.onSuccess(resultDto));
+    }
+
+
+    public Map<Member, Integer> calculateMemberExpense(List<PersonalSpending> personalSpendingList) {
+        Map<Member, Integer> memberExpenseMap = new HashMap<>();
+        for (PersonalSpending personalSpending : personalSpendingList) {
+            Member sender = personalSpending.getSender();
+            Member receiver = personalSpending.getReceiver();
+            Integer amount = personalSpending.getAmount();
+            // 본인 부담금 (개인 지출)
+            if (sender.equals(receiver)) {
+                memberExpenseMap.put(sender, memberExpenseMap.getOrDefault(sender, 0) + amount);
+                continue;
+            }
+            // 수신자가 받았을 경우, 지출 금액 감소
+            else if (memberExpenseMap.containsKey(receiver)) {
+                memberExpenseMap.put(receiver, memberExpenseMap.get(receiver) - amount);
+            }
+            // 송신자가 보냈을 경우, 지출 금액 증가
+            memberExpenseMap.put(sender, memberExpenseMap.getOrDefault(sender, 0) + amount);
+        }
+        return memberExpenseMap;
+    }
 
 
     // ** 검토

@@ -1,6 +1,7 @@
 package com.lets.go.right.now.domain.settlement.repository;
 
 import com.lets.go.right.now.domain.expense.entity.Expense;
+import com.lets.go.right.now.domain.expense.entity.enums.Category;
 import com.lets.go.right.now.domain.settlement.entity.PersonalSpending;
 import com.lets.go.right.now.domain.trip.entity.Trip;
 import java.util.List;
@@ -26,4 +27,7 @@ public interface PersonalSpendingRepository extends JpaRepository<PersonalSpendi
             + "AND ps.expense IS NOT NULL")
     Page<PersonalSpending> findMyPersonalSpending(
             @Param("tripId") Long tripId, @Param("senderId") Long senderId, Pageable pageable);
+
+    @Query("SELECT ps FROM PersonalSpending ps WHERE ps.trip = :trip AND ps.expense.category = :category")
+    List<PersonalSpending> findByTripAndCategory(@Param("trip") Trip trip, @Param("category") Category category);
 }

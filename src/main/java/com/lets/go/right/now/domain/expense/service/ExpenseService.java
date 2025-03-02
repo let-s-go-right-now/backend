@@ -1,6 +1,7 @@
 package com.lets.go.right.now.domain.expense.service;
 
 import com.lets.go.right.now.domain.expense.dto.ExpenseCreateReq;
+import com.lets.go.right.now.domain.expense.entity.enums.Category;
 import java.io.IOException;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
@@ -23,4 +24,6 @@ public interface ExpenseService {
     ResponseEntity<?> getTravelMemberExpenses(Long tripId);
 
     ResponseEntity<?> getCategoryReport(Long tripId);
+
+    ResponseEntity<?> getMemberCategoryReport(Long tripId, Category category);
 }
