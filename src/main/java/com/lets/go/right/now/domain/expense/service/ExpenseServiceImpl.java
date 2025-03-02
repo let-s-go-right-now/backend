@@ -249,7 +249,7 @@ public class ExpenseServiceImpl implements ExpenseService{
 
         // 2. 정산 대상 필터링 (제외 멤버 제거, 결제자는 별도 처리)
         List<Member> actualParticipants = participants.stream()
-                .filter(member -> !excludedMembers.contains(member) && !member.equals(payer)) // 결제자 제외
+                .filter(member -> !excludedMembers.contains(member)) // 계산에 포함되는 회원만 생각
                 .toList();
 
         // 정산할 회원이 없는 경우 예외 처리
@@ -259,17 +259,19 @@ public class ExpenseServiceImpl implements ExpenseService{
 
         // 3. 1인당 정산 금액 계산
         int totalAmount = expense.getPrice();
-        int settlementAmount = totalAmount / (actualParticipants.size() + 1); // 결제자 포함 인원(+1)
-        int remainingAmount = totalAmount % (actualParticipants.size() + 1); // 남은 금액 계산 -
+        int settlementAmount = totalAmount / (actualParticipants.size());
+        int remainingAmount = totalAmount % (actualParticipants.size());
 
         // 4. 참여자들에게 정산 금액 저장
         for (Member participant : actualParticipants) {
             personalSpendingRepository.save(PersonalSpending.toEntity(trip,expense,settlementAmount, participant, payer));
         }
 
-        // 5. 결제자에게 남은 금액 포함하여 저장
-        personalSpendingRepository.save(
-                PersonalSpending.toEntity(trip,expense,settlementAmount + remainingAmount, payer, payer));
+        // 5. 나머지 금액 발생시, 결제자가 부담
+        if (remainingAmount > 0) {
+            personalSpendingRepository.save(
+                    PersonalSpending.toEntity(trip,expense,remainingAmount, payer, payer));
+        }
     }
 
 
