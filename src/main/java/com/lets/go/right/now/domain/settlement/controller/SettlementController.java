@@ -51,10 +51,20 @@ public class SettlementController {
     /**
      * 여행 정산 결과 확인 하기
      */
-    @GetMapping("{travel_id}/result")
+    @GetMapping("{trip_id}/result")
     public ResponseEntity<?> getTravelSettlementResults(
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
-            @PathVariable("travel_id") Long travelId) {
-        return settlementService.getTravelSettlementResults(customUserDetails.getEmail(),travelId);
+            @PathVariable("trip_id") Long tripId) {
+        return settlementService.getTravelSettlementResults(customUserDetails.getEmail(),tripId);
+    }
+
+    /**
+     * 정산 현황 확인하기
+     */
+    @GetMapping("{trip_id}/status")
+    public ResponseEntity<?> getTravelSettlementStatus(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
+            @PathVariable("trip_id") Long tripId) {
+        return settlementService.getTravelSettlementStatus(customUserDetails.getEmail(),tripId);
     }
 }

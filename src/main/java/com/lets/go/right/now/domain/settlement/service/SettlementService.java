@@ -11,5 +11,7 @@ public interface SettlementService {
 
     ResponseEntity<?> calculateTravelSettlement(Long tripId);
 
-    ResponseEntity<?> getTravelSettlementResults(String email, Long travelId);
+    ResponseEntity<?> getTravelSettlementResults(String email, Long tripId);
+
+    ResponseEntity<?> getTravelSettlementStatus(String email, Long tripId);
 }
