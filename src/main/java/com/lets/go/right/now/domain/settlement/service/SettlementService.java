@@ -14,6 +14,4 @@ public interface SettlementService {
     ResponseEntity<?> getTravelSettlementResults(String email, Long tripId);
 
     ResponseEntity<?> getTravelSettlementStatus(String email, Long tripId);
-
-    ResponseEntity<?> getTravelMemberExpenses(Long tripId);
 }
