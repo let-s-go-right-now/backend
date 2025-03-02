@@ -26,4 +26,6 @@ public interface ExpenseService {
     ResponseEntity<?> getCategoryReport(Long tripId);
 
     ResponseEntity<?> getMemberCategoryReport(Long tripId, Category category);
+
+    ResponseEntity<?> getDailyExpenseReport(Long tripId);
 }

@@ -1,6 +1,7 @@
 package com.lets.go.right.now.domain.expense.service;
 
 import com.lets.go.right.now.domain.expense.dto.CategoryExpenseRes;
+import com.lets.go.right.now.domain.expense.dto.DailyExpenseRes;
 import com.lets.go.right.now.domain.expense.dto.ExpenseCreateReq;
 import com.lets.go.right.now.domain.expense.dto.ExpensePreviewRes;
 import com.lets.go.right.now.domain.expense.dto.ExpenseViewRes;
@@ -28,11 +29,14 @@ import com.lets.go.right.now.global.response.ApiResponse;
 import com.lets.go.right.now.global.s3.service.S3Service;
 import jakarta.transaction.Transactional;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -288,6 +292,42 @@ public class ExpenseServiceImpl implements ExpenseService{
         }
         return memberExpenseMap;
     }
+
+    /**
+     * 날짜별 총 지출 리포트
+     */
+    @Override
+    public ResponseEntity<?> getDailyExpenseReport(Long tripId) {
+        // 1. 여행 존재 여부 확인
+        Trip trip = tripRepository.getTripById(tripId);
+
+        // 2. 여행의 시작 날짜 & 종료 날짜 가져오기
+        LocalDate startDate = trip.getStartDate();
+        LocalDate endDate = trip.getEndDate();
+
+        // 3. 해당 여행에서 발생한 모든 지출 조회
+        List<Expense> expenses = expenseRepository.findByTrip(trip);
+
+        // 4. 날짜별 지출을 그룹화하여 총합 계산
+        Map<Integer, Integer> dailyExpenseMap = new TreeMap<>(); // 1일차부터 오름차순 정렬
+
+        for (Expense expense : expenses) {
+            LocalDate expenseDate = expense.getExpenseDate().toLocalDate(); // 지출 발생 날짜
+            long daysBetween = ChronoUnit.DAYS.between(startDate, expenseDate); // 0일부터 시작
+            int dayIndex = (int) daysBetween + 1; // 1일차부터 시작
+
+            // 날짜별 지출 금액 누적
+            dailyExpenseMap.put(dayIndex, dailyExpenseMap.getOrDefault(dayIndex, 0) + expense.getPrice());
+        }
+
+        // 5. DTO 변환
+        List<DailyExpenseRes> resultDto = dailyExpenseMap.entrySet().stream()
+                .map(entry -> DailyExpenseRes.of(entry.getKey(), entry.getValue()))
+                .toList();
+
+        return ResponseEntity.ok(ApiResponse.onSuccess(resultDto));
+    }
+
 
 
     // ** 검토

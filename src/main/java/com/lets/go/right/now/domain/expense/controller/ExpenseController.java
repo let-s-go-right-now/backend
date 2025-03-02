@@ -107,4 +107,12 @@ public class ExpenseController {
         return expenseService.getMemberCategoryReport(tripId, category);
     }
 
+    /**
+     * 날짜별 여행 총 지출 리포트
+     */
+    @GetMapping("{trip_id}/daily-expense")
+    public ResponseEntity<?> getDailyExpenseReport(
+            @PathVariable("trip_id") Long tripId) {
+        return expenseService.getDailyExpenseReport(tripId);
+    }
 }
