@@ -57,4 +57,14 @@ public class SettlementController {
             @PathVariable("travel_id") Long travelId) {
         return settlementService.getTravelSettlementResults(customUserDetails.getEmail(),travelId);
     }
+
+    /**
+     * 정산 현황 확인하기
+     */
+    @GetMapping("{travel_id}/status")
+    public ResponseEntity<?> getTravelSettlementStatus(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
+            @PathVariable("travel_id") Long travelId) {
+        return settlementService.getTravelSettlementStatus(customUserDetails.getEmail(),travelId);
+    }
 }

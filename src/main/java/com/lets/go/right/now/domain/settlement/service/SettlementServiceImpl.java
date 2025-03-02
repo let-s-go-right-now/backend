@@ -147,4 +147,21 @@ public class SettlementServiceImpl implements SettlementService {
         TravelSettlementResultReq resultDto = TravelSettlementResultReq.of(totalAmount, resultDtoList);
         return ResponseEntity.ok(ApiResponse.onSuccess(resultDto));
     }
+
+    /**
+     * 정산 현황 확인하기
+     */
+    @Override
+    public ResponseEntity<?> getTravelSettlementStatus(String email, Long travelId) {
+        // 1. 회원 존재 여부 확인
+
+        // 2. 여행 존재 여부 확인
+
+        // 3. 여행 회원 여부 확인
+
+        // 4. 해당 회원의 정산 완료 상태 확인
+
+        // 5. 해당 여행의 모든 정산 현황 조회 및 데이터 가공
+        return null;
+    }
 }
