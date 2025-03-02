@@ -5,8 +5,8 @@ import com.lets.go.right.now.domain.expense.dto.ExpensePreviewRes;
 import com.lets.go.right.now.domain.expense.dto.ExpenseViewRes;
 import com.lets.go.right.now.domain.expense.entity.ExcludedMember;
 import com.lets.go.right.now.domain.expense.entity.Expense;
-import com.lets.go.right.now.domain.settlement.dto.MemberTotalExpenseRes;
-import com.lets.go.right.now.domain.settlement.dto.TravelSettlementExpense;
+import com.lets.go.right.now.domain.expense.dto.MemberTotalExpenseRes;
+import com.lets.go.right.now.domain.expense.dto.TravelTotalExpense;
 import com.lets.go.right.now.domain.settlement.entity.PersonalSpending;
 import com.lets.go.right.now.domain.expense.entity.TripImage;
 import com.lets.go.right.now.domain.expense.repository.ExcludedMemberRepository;
@@ -218,7 +218,7 @@ public class ExpenseServiceImpl implements ExpenseService{
 
         return ResponseEntity.ok(
                 ApiResponse.onSuccess(
-                        TravelSettlementExpense.of(travelTotalAmount, memberList.size(), memberTotalExpenses)));
+                        TravelTotalExpense.of(travelTotalAmount, memberList.size(), memberTotalExpenses)));
     }
 
 
