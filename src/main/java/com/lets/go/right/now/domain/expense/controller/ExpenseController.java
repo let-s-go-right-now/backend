@@ -1,6 +1,7 @@
 package com.lets.go.right.now.domain.expense.controller;
 
 import com.lets.go.right.now.domain.expense.dto.ExpenseCreateReq;
+import com.lets.go.right.now.domain.expense.entity.enums.Category;
 import com.lets.go.right.now.domain.expense.service.ExpenseService;
 import com.lets.go.right.now.global.jwt.dto.CustomUserDetails;
 import java.io.IOException;
@@ -94,6 +95,16 @@ public class ExpenseController {
     public ResponseEntity<?> getCategoryReport(
             @PathVariable("trip_id") Long tripId) {
         return expenseService.getCategoryReport(tripId);
+    }
+
+    /**
+     * 회원별 카테고리 지출 리포트
+     */
+    @GetMapping("{trip_id}/member-category-report")
+    public ResponseEntity<?> getMemberCategoryReport(
+            @PathVariable("trip_id") Long tripId,
+            @RequestParam(value = "category") Category category) {
+        return expenseService.getMemberCategoryReport(tripId, category);
     }
 
 }
