@@ -1,6 +1,5 @@
-package com.lets.go.right.now.domain.settlement.dto;
+package com.lets.go.right.now.domain.expense.dto;
 
-import com.lets.go.right.now.domain.expense.dto.MemberProfileViewRes;
 import com.lets.go.right.now.domain.member.entity.Member;
 
 /**

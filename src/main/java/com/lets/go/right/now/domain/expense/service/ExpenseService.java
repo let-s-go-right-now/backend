@@ -19,4 +19,8 @@ public interface ExpenseService {
             throws IOException;
 
     ResponseEntity<?> getMyExpenses(Long tripId, String email, int page, int size);
+
+    ResponseEntity<?> getTravelMemberExpenses(Long tripId);
+
+    ResponseEntity<?> getCategoryReport(Long tripId);
 }

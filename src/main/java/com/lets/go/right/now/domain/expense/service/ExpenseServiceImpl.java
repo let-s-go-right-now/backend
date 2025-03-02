@@ -1,10 +1,13 @@
 package com.lets.go.right.now.domain.expense.service;
 
+import com.lets.go.right.now.domain.expense.dto.CategoryExpenseRes;
 import com.lets.go.right.now.domain.expense.dto.ExpenseCreateReq;
 import com.lets.go.right.now.domain.expense.dto.ExpensePreviewRes;
 import com.lets.go.right.now.domain.expense.dto.ExpenseViewRes;
 import com.lets.go.right.now.domain.expense.entity.ExcludedMember;
 import com.lets.go.right.now.domain.expense.entity.Expense;
+import com.lets.go.right.now.domain.expense.dto.MemberTotalExpenseRes;
+import com.lets.go.right.now.domain.expense.dto.TravelTotalExpense;
 import com.lets.go.right.now.domain.settlement.entity.PersonalSpending;
 import com.lets.go.right.now.domain.expense.entity.TripImage;
 import com.lets.go.right.now.domain.expense.repository.ExcludedMemberRepository;
@@ -24,7 +27,10 @@ import com.lets.go.right.now.global.s3.service.S3Service;
 import jakarta.transaction.Transactional;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -166,6 +172,88 @@ public class ExpenseServiceImpl implements ExpenseService{
         }
         return ResponseEntity.ok(ApiResponse.onSuccess(resultDtoArray));
     }
+
+    /**
+     * 여행 총 지출 확인 - 여행 회원별 총 지출액 확인
+     */
+    @Override
+    public ResponseEntity<?> getTravelMemberExpenses(Long tripId) {
+        // 1. 여행 존재 여부 확인
+        Trip trip = tripRepository.getTripById(tripId);
+
+        // 2. 해당 여행의 개인별 지출 정보 조회
+        List<PersonalSpending> spendingList = personalSpendingRepository.findByTrip(trip);
+        List<Member> memberList = trip.getMemberList().stream().map(TripMember::getMember).toList();
+
+        // 3. 여행 총 지출액 계산 (모든 지출 합산)
+        int travelTotalAmount = spendingList.stream()
+                .mapToInt(PersonalSpending::getAmount)
+                .sum();
+
+        // 4. 회원별 총 지출액 계산을 위한 Map 초기화
+        Map<Member, Integer> memberExpenseMap = new HashMap<>();
+
+        for (PersonalSpending personalSpending : spendingList) {
+            Member sender = personalSpending.getSender();
+            Member receiver = personalSpending.getReceiver();
+            Integer amount = personalSpending.getAmount();
+
+            // 본인 부담금 (개인 지출)
+            if (sender.equals(receiver)) {
+                memberExpenseMap.put(sender, memberExpenseMap.getOrDefault(sender, 0) + amount);
+                continue;
+            }
+            // 수신자가 받았을 경우, 지출 금액 감소
+            else if (memberExpenseMap.containsKey(receiver)) {
+                memberExpenseMap.put(receiver, memberExpenseMap.get(receiver) - amount);
+            }
+            // 송신자가 보냈을 경우, 지출 금액 증가
+            memberExpenseMap.put(sender, memberExpenseMap.getOrDefault(sender, 0) + amount);
+        }
+
+        // 5. DTO 변환(지출액 내림차순 정렬)
+        List<MemberTotalExpenseRes> memberTotalExpenses = memberList.stream()
+                .map(member -> MemberTotalExpenseRes.of(member, memberExpenseMap.getOrDefault(member, 0)))
+                .sorted(Comparator.comparingInt(MemberTotalExpenseRes::amount).reversed()) // 지출액 내림차순 정렬
+                .toList();
+
+        return ResponseEntity.ok(
+                ApiResponse.onSuccess(
+                        TravelTotalExpense.of(travelTotalAmount, memberList.size(), memberTotalExpenses)));
+    }
+
+    @Override
+    public ResponseEntity<?> getCategoryReport(Long tripId) {
+        // 1. 여행 존재 여부 확인
+        Trip trip = tripRepository.getTripById(tripId);
+
+        // 2. 여행 연관 지출 조회, 카테고리로 분류
+        List<Expense> expenses = expenseRepository.findByTrip(trip);
+        int totalExpense = expenses.stream().mapToInt(Expense::getPrice).sum();
+
+        // 3. 카테고리별 지출액 계산
+        Map<String, Integer> expenseMap = new HashMap<>();
+        for (Expense expense : expenses) {
+            String categoryName = expense.getCategory().toString();
+            // defaultValue : 0 -> NullPointerException 방지
+            expenseMap.put(categoryName, expenseMap.getOrDefault(categoryName, 0) + expense.getPrice());
+        }
+
+        // 4. DTO 변환
+        List<CategoryExpenseRes> resultDto = expenseMap.entrySet().stream()
+                .map(entry -> {
+                    String categoryName = entry.getKey();
+                    Integer categoryAmount = entry.getValue();
+                    double percentage = ((double) categoryAmount / totalExpense) * 100; // 퍼센트 변환
+                    return CategoryExpenseRes.of(categoryName, percentage, categoryAmount);
+                })
+                .sorted(Comparator.comparingDouble(CategoryExpenseRes::percentage).reversed()) // 퍼센트 기준 내림차순 정렬
+                .toList();
+
+        return ResponseEntity.ok(ApiResponse.onSuccess(resultDto));
+    }
+
+
 
     // ** 검토
     // 내림차순 정렬 기준 : createdAt

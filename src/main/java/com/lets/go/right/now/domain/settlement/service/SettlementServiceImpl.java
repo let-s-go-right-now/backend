@@ -3,9 +3,7 @@ package com.lets.go.right.now.domain.settlement.service;
 import com.lets.go.right.now.domain.expense.dto.MemberProfileViewRes;
 import com.lets.go.right.now.domain.member.entity.Member;
 import com.lets.go.right.now.domain.member.repository.MemberRepository;
-import com.lets.go.right.now.domain.settlement.dto.MemberTotalExpenseRes;
 import com.lets.go.right.now.domain.settlement.dto.PaymentCreateReq;
-import com.lets.go.right.now.domain.settlement.dto.TravelSettlementExpense;
 import com.lets.go.right.now.domain.settlement.dto.TravelSettlementResult;
 import com.lets.go.right.now.domain.settlement.dto.TravelSettlementResultRes;
 import com.lets.go.right.now.domain.settlement.dto.TravelSettlementStatus;
@@ -24,7 +22,6 @@ import com.lets.go.right.now.global.exception.GeneralException;
 import com.lets.go.right.now.global.response.ApiResponse;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -224,53 +221,5 @@ public class SettlementServiceImpl implements SettlementService {
                 ))
                 .toList();
         return ResponseEntity.ok(ApiResponse.onSuccess(responseList));
-    }
-
-    /**
-     * 여행 총 지출 확인 - 여행 회원별 총 지출액 확인
-     */
-    @Override
-    public ResponseEntity<?> getTravelMemberExpenses(Long tripId) {
-        // 1. 여행 존재 여부 확인
-        Trip trip = tripRepository.getTripById(tripId);
-
-        // 2. 해당 여행의 개인별 지출 정보 조회
-        List<PersonalSpending> spendingList = personalSpendingRepository.findByTrip(trip);
-        List<Member> memberList = trip.getMemberList().stream().map(TripMember::getMember).toList();
-
-        // 3. 여행 총 지출액 계산 (모든 지출 합산)
-        int travelTotalAmount = spendingList.stream()
-                .mapToInt(PersonalSpending::getAmount)
-                .sum();
-
-        // 4. 회원별 총 지출액 계산을 위한 Map 초기화
-        Map<Member, Integer> memberExpenseMap = new HashMap<>();
-
-        for (PersonalSpending personalSpending : spendingList) {
-            Member sender = personalSpending.getSender();
-            Member receiver = personalSpending.getReceiver();
-            Integer amount = personalSpending.getAmount();
-
-            // 본인 부담금 (개인 지출)
-            if (sender.equals(receiver)) {
-                memberExpenseMap.put(sender, memberExpenseMap.getOrDefault(sender, 0) + amount);
-                continue;
-            }
-            // 수신자가 받았을 경우, 지출 금액 감소
-            else if (memberExpenseMap.containsKey(receiver)) {
-                memberExpenseMap.put(receiver, memberExpenseMap.get(receiver) - amount);
-            }
-            // 송신자가 보냈을 경우, 지출 금액 증가
-            memberExpenseMap.put(sender, memberExpenseMap.getOrDefault(sender, 0) + amount);
-        }
-
-        // 5. DTO 변환(지출액 내림차순 정렬)
-        List<MemberTotalExpenseRes> memberTotalExpenses = memberList.stream()
-                .map(member -> MemberTotalExpenseRes.of(member, memberExpenseMap.getOrDefault(member, 0)))
-                .sorted(Comparator.comparingInt(MemberTotalExpenseRes::amount).reversed()) // 지출액 내림차순 정렬
-                .toList();
-
-        return ResponseEntity.ok(
-                ApiResponse.onSuccess(TravelSettlementExpense.of(travelTotalAmount, memberList.size(), memberTotalExpenses)));
     }
 }
