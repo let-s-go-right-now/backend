@@ -55,7 +55,7 @@ public class SettlementController {
     public ResponseEntity<?> getTravelSettlementResults(
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
             @PathVariable("trip_id") Long tripId) {
-        return settlementService.getTravelSettlementResults(customUserDetails.getEmail(),tripId);
+        return settlementService.getTravelSettlementResults(customUserDetails.getEmail(), tripId);
     }
 
     /**
@@ -65,6 +65,15 @@ public class SettlementController {
     public ResponseEntity<?> getTravelSettlementStatus(
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
             @PathVariable("trip_id") Long tripId) {
-        return settlementService.getTravelSettlementStatus(customUserDetails.getEmail(),tripId);
+        return settlementService.getTravelSettlementStatus(customUserDetails.getEmail(), tripId);
+    }
+
+    /**
+     * 여행 회원 별 총 지출액 반환 - 여행에 참여한 회원의 총 지출액 반환
+     */
+    @GetMapping("{trip_id}/member-expenses")
+    public ResponseEntity<?> getTravelMemberExpenses(
+            @PathVariable("trip_id") Long tripId) {
+        return settlementService.getTravelMemberExpenses(tripId);
     }
 }
