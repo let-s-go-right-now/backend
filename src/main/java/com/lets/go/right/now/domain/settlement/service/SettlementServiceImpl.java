@@ -4,6 +4,7 @@ import com.lets.go.right.now.domain.member.entity.Member;
 import com.lets.go.right.now.domain.member.repository.MemberRepository;
 import com.lets.go.right.now.domain.settlement.dto.PaymentCreateReq;
 import com.lets.go.right.now.domain.settlement.dto.TravelSettlementResult;
+import com.lets.go.right.now.domain.settlement.dto.TravelSettlementResultReq;
 import com.lets.go.right.now.domain.settlement.entity.PersonalSpending;
 import com.lets.go.right.now.domain.settlement.entity.TravelSettlement;
 import com.lets.go.right.now.domain.settlement.repository.PersonalSpendingRepository;
@@ -115,14 +116,35 @@ public class SettlementServiceImpl implements SettlementService {
         // 해당 회원이 여행의 일원인지 확인
         TripMember tripMember = tripMemberRepository.getByTripAndMember(trip, member);
 
-        // 나와 연관되어 있으면서, 본인 부담금은 포함하지 않는 레코드 조회
+        // 본인 부담금도 포함하여 조회
         List<TravelSettlement> myTravelSettlement =
                 travelSettlementRepository.findMyTravelSettlement(member,trip);
-        // 반환 DTO 설계
+
+        Integer totalAmount = 0;
         ArrayList<TravelSettlementResult> resultDtoList = new ArrayList<>();
+
         for (TravelSettlement travelSettlement : myTravelSettlement) {
+            Member sender = travelSettlement.getSender();
+            Member receiver = travelSettlement.getReceiver();
+            Integer settlementAmount = travelSettlement.getAmount();
+
+            // 본인 부담금(손실) 계산
+            if (sender.equals(receiver)) {
+                totalAmount += settlementAmount;
+                continue;
+            }
+
+            // 총 지출 금액 계산
+            if (receiver.equals(member)) { // 받을 돈
+                totalAmount -= settlementAmount;
+            } else { // 보낼 돈
+                totalAmount += settlementAmount;
+            }
+            // 정산 내역 추가
             resultDtoList.add(TravelSettlementResult.of(travelSettlement));
         }
-        return ResponseEntity.ok(ApiResponse.onSuccess(resultDtoList));
+
+        TravelSettlementResultReq resultDto = TravelSettlementResultReq.of(totalAmount, resultDtoList);
+        return ResponseEntity.ok(ApiResponse.onSuccess(resultDto));
     }
 }

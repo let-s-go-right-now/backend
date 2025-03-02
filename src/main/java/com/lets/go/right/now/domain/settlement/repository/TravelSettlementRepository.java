@@ -29,6 +29,6 @@ public interface TravelSettlementRepository extends JpaRepository<TravelSettleme
      */
     @Query("SELECT ts FROM TravelSettlement ts "
             + "WHERE (ts.sender = :member OR ts.receiver = :member) "
-            + "AND ts.sender != ts.receiver AND ts.trip = :trip")
+            + "AND ts.trip = :trip")
     List<TravelSettlement> findMyTravelSettlement(@Param("member") Member member, @Param("trip") Trip trip);
 }
