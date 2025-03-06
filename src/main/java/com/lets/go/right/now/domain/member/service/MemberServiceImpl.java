@@ -12,8 +12,6 @@ import com.lets.go.right.now.global.jwt.util.JwtUtil;
 import com.lets.go.right.now.global.response.ApiResponse;
 import com.lets.go.right.now.global.s3.service.S3Service;
 import jakarta.transaction.Transactional;
-import java.io.IOException;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -21,6 +19,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @Service
 @RequiredArgsConstructor
@@ -81,5 +81,12 @@ public class MemberServiceImpl implements MemberService{
     public ResponseEntity<?> getAccountNumber(AccountReq accountReq) {
         Member member = memberRepository.getMemberByEmail(accountReq.userEmail());
         return ResponseEntity.ok(ApiResponse.onSuccess(member.getAccountNumber()));
+    }
+
+    @Transactional
+    @Override
+    public void deleteMember(String email) {
+        // 이메일을 통해 사용자 조회 후 삭제
+        memberRepository.deleteByEmail(email);
     }
 }
