@@ -58,4 +58,16 @@ public class MemberController {
         memberService.deleteMember(customUserDetails.getEmail());
         return new LeaveRes("회원 탈퇴 완료");
     }
+
+    // 회원 조회
+    @GetMapping("/info")
+    public ResponseEntity<MemberInfoRes> info(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        // CustomUserDetails에서 이메일을 가져옴
+        String email = customUserDetails.getEmail();
+
+        // 이메일로 회원 정보를 가져옴
+        MemberInfoRes response = memberService.getMemberInfo(email);
+
+        return ResponseEntity.ok(response);
+    }
 }
