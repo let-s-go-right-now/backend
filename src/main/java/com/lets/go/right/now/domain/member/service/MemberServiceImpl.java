@@ -1,9 +1,6 @@
 package com.lets.go.right.now.domain.member.service;
 
-import com.lets.go.right.now.domain.member.dto.AccountReq;
-import com.lets.go.right.now.domain.member.dto.JoinReq;
-import com.lets.go.right.now.domain.member.dto.LoginRes;
-import com.lets.go.right.now.domain.member.dto.LoinReq;
+import com.lets.go.right.now.domain.member.dto.*;
 import com.lets.go.right.now.domain.member.entity.Member;
 import com.lets.go.right.now.domain.member.repository.MemberRepository;
 import com.lets.go.right.now.global.enums.statuscode.ErrorStatus;
@@ -88,5 +85,19 @@ public class MemberServiceImpl implements MemberService{
     public void deleteMember(String email) {
         // 이메일을 통해 사용자 조회 후 삭제
         memberRepository.deleteByEmail(email);
+    }
+
+    @Override
+    public MemberInfoRes getMemberInfo(String email) {
+        // 이메일로 회원 정보를 찾음
+        Member member = memberRepository.findMemberByEmail(email)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
+        // Member 정보를 MemberInfoRes로 변환하여 반환
+        return new MemberInfoRes(
+                member.getName(),
+                member.getProfileImgLink(),
+                member.getAccountNumber()
+        );
     }
 }

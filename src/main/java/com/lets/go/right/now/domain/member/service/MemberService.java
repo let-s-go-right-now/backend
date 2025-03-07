@@ -3,6 +3,7 @@ package com.lets.go.right.now.domain.member.service;
 import com.lets.go.right.now.domain.member.dto.AccountReq;
 import com.lets.go.right.now.domain.member.dto.JoinReq;
 import com.lets.go.right.now.domain.member.dto.LoinReq;
+import com.lets.go.right.now.domain.member.dto.MemberInfoRes;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -14,4 +15,6 @@ public interface MemberService {
 
     ResponseEntity<?> getAccountNumber(AccountReq accountReq);
     void deleteMember(String email);
+
+    MemberInfoRes getMemberInfo(String email);
 }
