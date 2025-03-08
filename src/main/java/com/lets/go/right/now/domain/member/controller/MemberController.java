@@ -97,6 +97,10 @@ public class MemberController {
         return memberService.updateProfileImgLink(userDetails.getEmail(), newProfileImg);
     }
 
+    @DeleteMapping("/profile-image")
+    public ResponseEntity<?> deleteProfileImage(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        return memberService.deleteProfileImgLink(userDetails.getEmail());
+    }
 }
 
 
