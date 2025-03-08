@@ -3,6 +3,7 @@ package com.lets.go.right.now.domain.member.controller;
 import com.lets.go.right.now.domain.member.dto.*;
 import com.lets.go.right.now.domain.member.service.MemberService;
 import com.lets.go.right.now.global.jwt.dto.CustomUserDetails;
+import com.lets.go.right.now.global.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -48,15 +49,13 @@ public class MemberController {
     @PostMapping("/logout")
     public ResponseEntity<?> logout(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
         // 클라이언트에서 JWT 토큰을 삭제하도록 유도
-        return ResponseEntity.ok(new LogoutRes("로그 아웃 완료"));
+        return ResponseEntity.ok(ApiResponse.onSuccess("로그아웃이 정상적으로 처리되었습니다."));
     }
 
     // 회원 탈퇴
     @PostMapping("/leave")
-    public LeaveRes leave(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        // 사용자 정보를 기반으로 탈퇴 처리
-        memberService.deleteMember(customUserDetails.getEmail());
-        return new LeaveRes("회원 탈퇴 완료");
+    public ResponseEntity<?> deleteMember(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        return memberService.deleteMember(customUserDetails.getEmail());
     }
 
     // 회원 조회

@@ -80,13 +80,20 @@ public class MemberServiceImpl implements MemberService{
         return ResponseEntity.ok(ApiResponse.onSuccess(member.getAccountNumber()));
     }
 
+    /**
+     * 회원 탈퇴
+     */
     @Transactional
     @Override
-    public void deleteMember(String email) {
+    public ResponseEntity<?> deleteMember(String email) {
         // 이메일을 통해 사용자 조회 후 삭제
         memberRepository.deleteByEmail(email);
+        return ResponseEntity.ok(ApiResponse.onSuccess("회원 탈퇴가 정상적으로 처리되었습니다."));
     }
 
+    /**
+     * 회원 정보 조회
+     */
     @Override
     public ResponseEntity<?> getMemberInfo(String email) {
 
@@ -104,6 +111,9 @@ public class MemberServiceImpl implements MemberService{
 
     }
 
+    /**
+     * 회원 이름 수정
+     */
     @Override
     public ResponseEntity<?> updateName(String email, String newName) {
 
@@ -115,6 +125,9 @@ public class MemberServiceImpl implements MemberService{
         return ResponseEntity.ok(ApiResponse.onSuccess(ProfileUpdateRes.ofName(newName)));
     }
 
+    /**
+     * 회원 계좌 번호 수정
+     */
     @Override
     public ResponseEntity<?> updateAccountNumber(String email, String newAccountNumber) {
 
@@ -126,6 +139,10 @@ public class MemberServiceImpl implements MemberService{
         return ResponseEntity.ok(ApiResponse.onSuccess(ProfileUpdateRes.ofAccountNumber(newAccountNumber)));
     }
 
+    /**
+     * 회원 프로필 이미지 수정
+     */
+    @Transactional
     @Override
     public ResponseEntity<?> updateProfileImgLink(String email, MultipartFile newProfileImg) throws IOException {
 
@@ -150,6 +167,10 @@ public class MemberServiceImpl implements MemberService{
         return ResponseEntity.ok(ApiResponse.onSuccess(ProfileUpdateRes.ofProfileImgLink(newProfileImgLink)));
     }
 
+    /**
+     * 회원 프로필 이미지 삭제
+     */
+    @Transactional
     @Override
     public ResponseEntity<?> deleteProfileImgLink(String email) {
 

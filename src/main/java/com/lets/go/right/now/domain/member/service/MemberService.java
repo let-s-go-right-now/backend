@@ -11,7 +11,8 @@ public interface MemberService {
     ResponseEntity<?> join(JoinReq joinReq, MultipartFile image) throws IOException;
 
     ResponseEntity<?> getAccountNumber(AccountReq accountReq);
-    void deleteMember(String email);
+
+    ResponseEntity<?> deleteMember(String email);
 
     ResponseEntity<?> getMemberInfo(String email);
 
