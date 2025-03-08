@@ -14,4 +14,8 @@ public record ProfileUpdateRes(
         return new ProfileUpdateRes(null, accountNumber, null);
     }
 
+    // 프로필 이미지만 수정된 경우
+    public static ProfileUpdateRes ofProfileImgLink(String profileImgLink) {
+        return new ProfileUpdateRes(null, null, profileImgLink);
+    }
 }

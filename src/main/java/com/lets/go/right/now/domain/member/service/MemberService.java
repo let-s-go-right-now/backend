@@ -18,4 +18,6 @@ public interface MemberService {
     ProfileUpdateRes updateName(String email, String newName);
 
     ResponseEntity<?> updateAccountNumber(String email, String newAccountNumber);
+
+    ResponseEntity<?> updateProfileImgLink(String email, MultipartFile newProfileImg) throws IOException;
 }

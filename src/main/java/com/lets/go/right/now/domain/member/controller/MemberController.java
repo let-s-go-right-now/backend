@@ -90,6 +90,12 @@ public class MemberController {
         return memberService.updateAccountNumber(userDetails.getEmail(), newAccountNumber);
     }
 
+    @PutMapping("/profile-image")
+    public ResponseEntity<?> updateProfileImage(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam("profileImgLink") MultipartFile newProfileImg) throws IOException {
+        return memberService.updateProfileImgLink(userDetails.getEmail(), newProfileImg);
+    }
 
 }
 
