@@ -112,4 +112,16 @@ public class MemberServiceImpl implements MemberService{
         return new ProfileUpdateRes(newName, null, null);
     }
 
+    @Override
+    public ResponseEntity<?> updateAccountNumber(String email, String newAccountNumber) {
+
+        Member member = memberRepository.findMemberByEmail(email)
+         .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
+        member.changeAccountNumber(newAccountNumber);
+        memberRepository.save(member);
+        return ResponseEntity.ok(ApiResponse.onSuccess(ProfileUpdateRes.ofAccountNumber(newAccountNumber)));
+    }
+
+
 }

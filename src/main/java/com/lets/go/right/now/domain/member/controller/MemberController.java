@@ -82,4 +82,15 @@ public class MemberController {
         return ApiResponse.onSuccess(resultDto);
     }
 
+    // 회원의 계좌 번호 수정
+    @PutMapping("/account-number")
+    public ResponseEntity<?> updateAccountNumber(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam("accountNumber") String newAccountNumber) {
+        return memberService.updateAccountNumber(userDetails.getEmail(), newAccountNumber);
+    }
+
+
 }
+
+
