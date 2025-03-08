@@ -20,4 +20,6 @@ public interface MemberService {
     ResponseEntity<?> updateAccountNumber(String email, String newAccountNumber);
 
     ResponseEntity<?> updateProfileImgLink(String email, MultipartFile newProfileImg) throws IOException;
+
+    ResponseEntity<?> deleteProfileImgLink(String email);
 }

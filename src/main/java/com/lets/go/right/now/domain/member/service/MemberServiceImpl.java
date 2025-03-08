@@ -147,4 +147,23 @@ public class MemberServiceImpl implements MemberService{
         return ResponseEntity.ok(ApiResponse.onSuccess(ProfileUpdateRes.ofProfileImgLink(newProfileImgLink)));
     }
 
+    @Override
+    public ResponseEntity<?> deleteProfileImgLink(String email) {
+
+        // 1. 이메일로 회원 조회
+        Member member = memberRepository.findMemberByEmail(email)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
+        // 2. 기존 프로필 이미지 삭제
+        String profileImgLink = member.getProfileImgLink();
+        if (profileImgLink != null && !profileImgLink.isEmpty()) {
+            s3Service.deleteFileByURL(profileImgLink);  // S3에서 파일 삭제
+            member.changeProfileImgLink(null);  // 프로필 이미지 링크 null로 변경
+            memberRepository.save(member);
+        }
+
+        return ResponseEntity.ok(ApiResponse.onSuccess("해당 회원의 프로필 이미지가 삭제되었습니다"));
+    }
 }
+
+
