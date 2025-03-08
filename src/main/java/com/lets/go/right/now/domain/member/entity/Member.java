@@ -1,15 +1,16 @@
 package com.lets.go.right.now.domain.member.entity;
 
 import com.lets.go.right.now.domain.expense.entity.ExcludedMember;
-import com.lets.go.right.now.domain.settlement.entity.PersonalSpending;
 import com.lets.go.right.now.domain.member.dto.JoinReq;
+import com.lets.go.right.now.domain.settlement.entity.PersonalSpending;
 import com.lets.go.right.now.domain.trip.entity.ScrappedTrip;
 import com.lets.go.right.now.domain.trip.entity.TripMember;
 import jakarta.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.*;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -41,6 +42,8 @@ public class Member {
                 .accountNumber(joinReq.accountNumber())
                 .build();
     }
+
+    public void changeName(String newName) { this.name = newName; }
 
     public void changeProfileImgLink(String profileImgLink) {
         this.profileImgLink = profileImgLink;
