@@ -82,4 +82,9 @@ public class MemberServiceImpl implements MemberService{
         Member member = memberRepository.getMemberByEmail(accountReq.userEmail());
         return ResponseEntity.ok(ApiResponse.onSuccess(member.getAccountNumber()));
     }
+
+    @Override
+    public Member findByEmail(String email) {
+        return null;
+    }
 }

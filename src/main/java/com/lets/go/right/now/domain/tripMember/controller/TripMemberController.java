@@ -22,4 +22,6 @@ public class TripMemberController {
             @PathVariable("trip_id") Long tripId) {
         return tripMemberService.finishSettlement(customUserDetails.getEmail(), tripId);
     }
+
+
 }

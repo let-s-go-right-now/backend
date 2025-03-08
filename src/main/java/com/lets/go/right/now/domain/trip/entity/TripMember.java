@@ -22,6 +22,7 @@ import lombok.*;
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "Trip_Member")
 public class TripMember {
+
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "trip_member_id")
     private Long id;

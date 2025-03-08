@@ -45,11 +45,6 @@ public class Trip {
     @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL)
     List<SettlementResult> settlementResults = new ArrayList<>();
 
-    // 여행 이미지들
-    // @Builder.Default
-    // @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    // private List<TripImage> tripImages = new ArrayList<>();
-
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
