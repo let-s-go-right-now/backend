@@ -13,7 +13,7 @@ public interface MemberService {
     ResponseEntity<?> getAccountNumber(AccountReq accountReq);
     void deleteMember(String email);
 
-    MemberInfoRes getMemberInfo(String email);
+    ResponseEntity<?> getMemberInfo(String email);
 
     ResponseEntity<?> updateName(String email, String newName);
 

@@ -3,7 +3,6 @@ package com.lets.go.right.now.domain.member.controller;
 import com.lets.go.right.now.domain.member.dto.*;
 import com.lets.go.right.now.domain.member.service.MemberService;
 import com.lets.go.right.now.global.jwt.dto.CustomUserDetails;
-import com.lets.go.right.now.global.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -62,14 +61,8 @@ public class MemberController {
 
     // 회원 조회
     @GetMapping("/info")
-    public ResponseEntity<MemberInfoRes> info(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        // CustomUserDetails에서 이메일을 가져옴
-        String email = customUserDetails.getEmail();
-
-        // 이메일로 회원 정보를 가져옴
-        MemberInfoRes response = memberService.getMemberInfo(email);
-
-        return ResponseEntity.ok(response);
+    public ResponseEntity<?> getMemberInfo(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        return memberService.getMemberInfo(customUserDetails.getEmail());
     }
 
     // 회원 이름 수정

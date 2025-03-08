@@ -88,17 +88,20 @@ public class MemberServiceImpl implements MemberService{
     }
 
     @Override
-    public MemberInfoRes getMemberInfo(String email) {
-        // 이메일로 회원 정보를 찾음
+    public ResponseEntity<?> getMemberInfo(String email) {
+
         Member member = memberRepository.findMemberByEmail(email)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
 
-        // Member 정보를 MemberInfoRes로 변환하여 반환
-        return new MemberInfoRes(
+        // 회원의 이름, 계좌번호, 프로필 사진 반환
+        MemberInfoRes memberInfoRes = new MemberInfoRes(
                 member.getName(),
                 member.getProfileImgLink(),
                 member.getAccountNumber()
         );
+
+        return ResponseEntity.ok(ApiResponse.onSuccess(memberInfoRes));
+
     }
 
     @Override
