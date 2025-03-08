@@ -15,7 +15,7 @@ public interface MemberService {
 
     MemberInfoRes getMemberInfo(String email);
 
-    ProfileUpdateRes updateName(String email, String newName);
+    ResponseEntity<?> updateName(String email, String newName);
 
     ResponseEntity<?> updateAccountNumber(String email, String newAccountNumber);
 

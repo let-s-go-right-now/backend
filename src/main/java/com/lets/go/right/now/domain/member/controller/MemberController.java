@@ -74,12 +74,10 @@ public class MemberController {
 
     // 회원 이름 수정
     @PutMapping("/name")
-    public ApiResponse<ProfileUpdateRes> updateName(
+    public ResponseEntity<?> updateName(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam("name") String newName) {
-
-        ProfileUpdateRes resultDto = memberService.updateName(userDetails.getEmail(), newName);
-        return ApiResponse.onSuccess(resultDto);
+        return memberService.updateName(userDetails.getEmail(), newName);
     }
 
     // 회원의 계좌 번호 수정
@@ -90,6 +88,7 @@ public class MemberController {
         return memberService.updateAccountNumber(userDetails.getEmail(), newAccountNumber);
     }
 
+    // 회원의 프로필 이미지 수정
     @PutMapping("/profile-image")
     public ResponseEntity<?> updateProfileImage(
             @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -97,6 +96,7 @@ public class MemberController {
         return memberService.updateProfileImgLink(userDetails.getEmail(), newProfileImg);
     }
 
+    // 회원의 프로필 이미지 삭제
     @DeleteMapping("/profile-image")
     public ResponseEntity<?> deleteProfileImage(@AuthenticationPrincipal CustomUserDetails userDetails) {
         return memberService.deleteProfileImgLink(userDetails.getEmail());
