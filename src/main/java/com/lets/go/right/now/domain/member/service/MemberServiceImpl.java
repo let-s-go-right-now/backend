@@ -8,6 +8,7 @@ import com.lets.go.right.now.global.exception.GeneralException;
 import com.lets.go.right.now.global.jwt.util.JwtUtil;
 import com.lets.go.right.now.global.response.ApiResponse;
 import com.lets.go.right.now.global.s3.service.S3Service;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -100,4 +101,15 @@ public class MemberServiceImpl implements MemberService{
                 member.getAccountNumber()
         );
     }
+
+    @Override
+    public ProfileUpdateRes updateName(String email, String newName) {
+        Member member = memberRepository.findMemberByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
+
+        member.changeName(newName);
+        memberRepository.save(member);
+        return new ProfileUpdateRes(newName, null, null);
+    }
+
 }
