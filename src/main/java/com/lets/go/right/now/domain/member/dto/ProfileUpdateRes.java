@@ -7,4 +7,11 @@ public record ProfileUpdateRes(
         String name,             // 수정된 이름
         String accountNumber,    // 수정된 계좌 번호
         String profileImgLink    // 수정된 프로필 이미지 URL
-) {}
+) {
+
+    // 계좌 번호만 수정된 경우
+    public static ProfileUpdateRes ofAccountNumber(String accountNumber) {
+        return new ProfileUpdateRes(null, accountNumber, null);
+    }
+
+}

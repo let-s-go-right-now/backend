@@ -44,7 +44,7 @@ public class Member {
     }
 
     public void changeName(String newName) { this.name = newName; }
-
+    public void changeAccountNumber(String accountNumber) { this.accountNumber = accountNumber; }
     public void changeProfileImgLink(String profileImgLink) {
         this.profileImgLink = profileImgLink;
     }
