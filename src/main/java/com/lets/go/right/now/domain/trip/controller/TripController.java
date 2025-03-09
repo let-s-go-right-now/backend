@@ -2,7 +2,6 @@ package com.lets.go.right.now.domain.trip.controller;
 
 import com.lets.go.right.now.domain.member.entity.Member;
 import com.lets.go.right.now.domain.member.repository.MemberRepository;
-import com.lets.go.right.now.domain.member.service.MemberService;
 import com.lets.go.right.now.domain.trip.dto.TripCreateRequest;
 import com.lets.go.right.now.domain.trip.dto.TripCreateRes;
 import com.lets.go.right.now.domain.trip.dto.TripDetailResponse;
@@ -88,4 +87,10 @@ public class TripController {
         return ResponseEntity.ok(response);
     }
 
+    // 특정 여행에 등록된 멤버 조회
+    @GetMapping("/{tripId}/members")
+    public ResponseEntity<?> getTripMembers(@AuthenticationPrincipal CustomUserDetails customUserDetails,
+                                            @PathVariable Long tripId) {
+        return tripService.getTripMembers(customUserDetails.getEmail(), tripId);
+    }
 }
