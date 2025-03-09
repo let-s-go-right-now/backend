@@ -45,19 +45,17 @@ public class TripServiceImpl implements TripService {
         return tripRepository.save(trip);
     }
 
-    // 진행중 여행 목록 조회
     @Transactional(readOnly = true)
     @Override
     public List<TripListDto> getOngoingTrips(Member owner) {
         LocalDate today = LocalDate.now();
 
-        // 리포지토리 메서드를 사용해 진행 중인 여행을 조회
+        // 진행 중인 여행 조회
         List<Trip> ongoingTrips = tripRepository.findOngoingTrips(owner, today);
 
-        // DTO로 변환하여 반환
+        // DTO 변환 및 여행 멤버 추가
         return ongoingTrips.stream()
                 .map(trip -> {
-                    // Trip 객체를 직접 TripListDto로 변환
                     TripListDto dto = new TripListDto();
                     dto.setId(trip.getId());
                     dto.setName(trip.getName());
@@ -65,10 +63,19 @@ public class TripServiceImpl implements TripService {
                     dto.setStartDate(trip.getStartDate());
                     dto.setEndDate(trip.getEndDate());
                     dto.setOwnerid(trip.getOwner().getId());
+
+                    // 여행 멤버 조회 및 DTO 변환
+                    List<TripMember> tripMembers = tripMemberRepository.findByTrip(trip);
+                    List<TripMemberListRes.MemberResDto> memberDtos = tripMembers.stream()
+                            .map(tripMember -> new TripMemberListRes.MemberResDto(tripMember.getMember()))
+                            .collect(Collectors.toList());
+
+                    dto.setMembers(memberDtos);
                     return dto;
                 })
                 .collect(Collectors.toList());
     }
+
 
     // 종료된 여행 목록 조회
     @Transactional(readOnly = true)
@@ -89,6 +96,14 @@ public class TripServiceImpl implements TripService {
                     dto.setStartDate(trip.getStartDate());
                     dto.setEndDate(trip.getEndDate());
                     dto.setOwnerid(trip.getOwner().getId());
+
+                    // 여행 멤버 조회 및 DTO 변환
+                    List<TripMember> tripMembers = tripMemberRepository.findByTrip(trip);
+                    List<TripMemberListRes.MemberResDto> memberDtos = tripMembers.stream()
+                            .map(tripMember -> new TripMemberListRes.MemberResDto(tripMember.getMember()))
+                            .collect(Collectors.toList());
+
+                    dto.setMembers(memberDtos);
                     return dto;
                 })
                 .collect(Collectors.toList());
