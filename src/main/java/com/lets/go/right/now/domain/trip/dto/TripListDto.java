@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Setter
 @Getter
@@ -15,4 +16,5 @@ public class TripListDto {
     private LocalDate startDate;
     private LocalDate endDate;
     private Long ownerid;
+    private List<TripMemberListRes.MemberResDto> members;
 }
