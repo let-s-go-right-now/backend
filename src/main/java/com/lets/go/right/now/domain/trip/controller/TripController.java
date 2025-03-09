@@ -30,7 +30,7 @@ public class TripController {
 
     // 새로운 여행 생성
     @PostMapping
-    public ResponseEntity<Trip> createTrip(
+    public ResponseEntity<?> createTrip(
             @RequestBody TripCreateRequest request,
             @AuthenticationPrincipal CustomUserDetails customUserDetails) {
 
@@ -47,7 +47,7 @@ public class TripController {
                 end,
                 owner
         );
-        return ResponseEntity.ok(trip);
+        return ResponseEntity.ok(ApiResponse.onSuccess(trip.getId()));
     }
     // 진행중인 여행조회
     @GetMapping("/ongoing")
