@@ -64,7 +64,7 @@ public class TripServiceImpl implements TripService {
                     dto.setIntroduce(trip.getIntroduce());
                     dto.setStartDate(trip.getStartDate());
                     dto.setEndDate(trip.getEndDate());
-                    dto.setOwner(trip.getOwner());
+                    dto.setOwnerid(trip.getOwner().getId());
                     return dto;
                 })
                 .collect(Collectors.toList());
@@ -88,7 +88,7 @@ public class TripServiceImpl implements TripService {
                     dto.setIntroduce(trip.getIntroduce());
                     dto.setStartDate(trip.getStartDate());
                     dto.setEndDate(trip.getEndDate());
-                    dto.setOwner(trip.getOwner());
+                    dto.setOwnerid(trip.getOwner().getId());
                     return dto;
                 })
                 .collect(Collectors.toList());

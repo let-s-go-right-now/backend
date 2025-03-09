@@ -14,5 +14,5 @@ public class TripListDto {
     private String introduce;
     private LocalDate startDate;
     private LocalDate endDate;
-    private Member owner;
+    private Long ownerid;
 }
