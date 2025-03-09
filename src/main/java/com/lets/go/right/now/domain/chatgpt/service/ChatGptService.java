@@ -64,7 +64,6 @@ public class ChatGptService {
                                         ChatGptRes responseDto = new ChatGptRes();
                                         responseDto.setTripImage(photoUrl);  // photoUrl을 tripImage에 설정
                                         responseDto.setTitle(travel.getTitle());
-                                        responseDto.setPlace(travel.getPlace());
                                         responseDto.setDescription(travel.getDescription());
                                         responseDto.setTransportation(travel.getTransportation());
                                         responseDto.setCost(travel.getCost());
@@ -84,7 +83,6 @@ public class ChatGptService {
                                         // 실패 시에도 DTO를 반환하여 계속 진행
                                         ChatGptRes fallbackDto = new ChatGptRes();
                                         fallbackDto.setTitle(travel.getTitle());
-                                        fallbackDto.setPlace(travel.getPlace());
                                         fallbackDto.setDescription(travel.getDescription());
                                         fallbackDto.setTransportation(travel.getTransportation());
                                         fallbackDto.setCost(travel.getCost());
