@@ -1,27 +1,34 @@
 package com.lets.go.right.now.domain.trip.service;
 
 import com.lets.go.right.now.domain.member.entity.Member;
+import com.lets.go.right.now.domain.member.repository.MemberRepository;
 import com.lets.go.right.now.domain.trip.dto.TripDetailResponse;
 import com.lets.go.right.now.domain.trip.dto.TripListDto;
+import com.lets.go.right.now.domain.trip.dto.TripMemberListRes;
 import com.lets.go.right.now.domain.trip.entity.Trip;
 import com.lets.go.right.now.domain.trip.entity.TripMember;
 import com.lets.go.right.now.domain.trip.repository.TripRepository;
 import com.lets.go.right.now.domain.tripMember.repository.TripMemberRepository;
 import com.lets.go.right.now.global.enums.statuscode.ErrorStatus;
 import com.lets.go.right.now.global.exception.GeneralException;
+import com.lets.go.right.now.global.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional; // 변경된 부분
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class TripServiceImpl implements TripService {
+
     private final TripRepository tripRepository;
     private final TripMemberRepository tripMemberRepository;
+    private final MemberRepository memberRepository;
 
     @Transactional
     @Override
@@ -95,6 +102,34 @@ public class TripServiceImpl implements TripService {
     public TripDetailResponse getTripDetail(Long tripId, Member member) {
         Trip trip = tripRepository.getTripById(tripId);
         return convertTripToDetailResponse(trip);
+    }
+
+    @Override
+    public ResponseEntity<?> getTripMembers(String email, Long tripId) {
+
+        // 1. 이메일을 기반으로 회원을 조회
+        Member member = memberRepository.findMemberByEmail(email)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
+        // 2. 여행(tripId)을 기반으로 해당 여행을 조회
+        Trip trip = tripRepository.findById(tripId)
+                .orElseThrow(() -> new GeneralException(ErrorStatus._TRIP_NOT_FOUND));
+
+        // 3. 여행에 등록된 멤버인지 확인
+        Optional<TripMember> tripMember = tripMemberRepository.findByTripAndMember(trip, member);
+        if (tripMember.isEmpty()) {
+            // 사용자가 해당 여행에 등록된 멤버가 아닐 경우
+            throw new GeneralException(ErrorStatus._TRIP_MEMBER_NOT_FOUND);
+        }
+
+        // 4. 해당 여행에 등록된 멤버들을 조회
+        List<TripMember> tripMembers = tripMemberRepository.findByTrip(trip);
+
+        // 5. 멤버들을 DTO로 변환
+        TripMemberListRes tripMemberResDtoList = TripMemberListRes.from(tripMembers);
+
+        // 6. 조회된 여행 멤버 리스트를 반환
+        return ResponseEntity.ok(ApiResponse.onSuccess(tripMemberResDtoList));
     }
 
     // private 메서드로 중복 코드 제거: Trip -> TripDetailResponse 변환
