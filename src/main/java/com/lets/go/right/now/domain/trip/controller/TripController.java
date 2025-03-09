@@ -4,6 +4,7 @@ import com.lets.go.right.now.domain.member.entity.Member;
 import com.lets.go.right.now.domain.member.repository.MemberRepository;
 import com.lets.go.right.now.domain.member.service.MemberService;
 import com.lets.go.right.now.domain.trip.dto.TripCreateRequest;
+import com.lets.go.right.now.domain.trip.dto.TripDetailResponse;
 import com.lets.go.right.now.domain.trip.dto.TripListDto;
 import com.lets.go.right.now.domain.trip.entity.Trip;
 import com.lets.go.right.now.domain.trip.service.TripService;
@@ -60,4 +61,30 @@ public class TripController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.onSuccess(ongoingTrips));
     }
+    // 완료된 여행조회
+    @GetMapping("/ended")
+    public ResponseEntity<ApiResponse<List<TripListDto>>> getEndedTrips(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+
+        Member owner = memberRepository.findMemberByEmail(customUserDetails.getEmail())
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
+        List<TripListDto> ongoingTrips = tripService.getEndedTrips(owner);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.onSuccess(ongoingTrips));
+    }
+
+    // 특정여행 상세조회
+    @GetMapping("/{tripId}")
+    public ResponseEntity<TripDetailResponse> getTripDetail(
+            @PathVariable("tripId") Long tripId,
+            @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+
+        Member member = memberRepository.findMemberByEmail(customUserDetails.getEmail())
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
+        TripDetailResponse response = tripService.getTripDetail(tripId, member);
+        return ResponseEntity.ok(response);
+    }
+
 }

@@ -9,6 +9,7 @@ import java.time.LocalDate;
 @Setter
 @Getter
 public class TripListDto {
+    private Long id;
     private String name;
     private String introduce;
     private LocalDate startDate;
