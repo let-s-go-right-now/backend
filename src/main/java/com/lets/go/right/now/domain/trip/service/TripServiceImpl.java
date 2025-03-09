@@ -4,6 +4,7 @@ import com.lets.go.right.now.domain.member.entity.Member;
 import com.lets.go.right.now.domain.trip.dto.TripDetailResponse;
 import com.lets.go.right.now.domain.trip.dto.TripListDto;
 import com.lets.go.right.now.domain.trip.entity.Trip;
+import com.lets.go.right.now.domain.trip.entity.TripMember;
 import com.lets.go.right.now.domain.trip.repository.TripRepository;
 import com.lets.go.right.now.domain.tripMember.repository.TripMemberRepository;
 import com.lets.go.right.now.global.enums.statuscode.ErrorStatus;
@@ -32,6 +33,8 @@ public class TripServiceImpl implements TripService {
                 .endDate(endDate)
                 .owner(owner)
                 .build();
+        TripMember tripMember = TripMember.toEntity(trip, owner);
+        tripMemberRepository.save(tripMember);
         return tripRepository.save(trip);
     }
 
