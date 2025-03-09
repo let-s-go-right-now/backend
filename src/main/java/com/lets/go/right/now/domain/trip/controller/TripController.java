@@ -4,6 +4,7 @@ import com.lets.go.right.now.domain.member.entity.Member;
 import com.lets.go.right.now.domain.member.repository.MemberRepository;
 import com.lets.go.right.now.domain.member.service.MemberService;
 import com.lets.go.right.now.domain.trip.dto.TripCreateRequest;
+import com.lets.go.right.now.domain.trip.dto.TripCreateRes;
 import com.lets.go.right.now.domain.trip.dto.TripDetailResponse;
 import com.lets.go.right.now.domain.trip.dto.TripListDto;
 import com.lets.go.right.now.domain.trip.entity.Trip;
@@ -47,7 +48,7 @@ public class TripController {
                 end,
                 owner
         );
-        return ResponseEntity.ok(ApiResponse.onSuccess(trip.getId()));
+        return ResponseEntity.ok(ApiResponse.onSuccess(TripCreateRes.of(trip)));
     }
     // 진행중인 여행조회
     @GetMapping("/ongoing")
