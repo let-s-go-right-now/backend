@@ -42,4 +42,12 @@ public class TripMember {
         this.settlementStatus = status;
     }
 
+    public static TripMember toEntity(Trip trip, Member member) {
+        return TripMember.builder()
+                .trip(trip)
+                .member(member)
+                .settlementStatus(Status.PROGRESS)
+                .build();
+    }
+
 }
