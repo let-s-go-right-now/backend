@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lets.go.right.now.domain.chatgpt.dto.ItineraryDto;
 import com.lets.go.right.now.domain.member.entity.Member;
 import com.lets.go.right.now.domain.member.repository.MemberRepository;
+import com.lets.go.right.now.domain.scrap.dto.ScrapTripDetailRes;
 import com.lets.go.right.now.domain.scrap.dto.ScrapTripReq;
 import com.lets.go.right.now.domain.scrap.dto.ScrapTripRes;
 import com.lets.go.right.now.domain.scrap.entity.ScrappedTrip;
@@ -94,6 +95,25 @@ public class ScrapService {
         return ResponseEntity.ok(ApiResponse.onSuccess(scrappedTripResList));
     }
 
+    // scrappedTrip 테이블을 통해 scrapped_trip_detail 테이블 조회
+    public ResponseEntity<?> getScrappedTripsDetail(String email, Long scrapId) {
+
+        // 이메일로 사용자 조회
+        Member member = memberRepository.getMemberByEmail(email);
+
+        // scrapId로 ScrappedTrip 조회
+        ScrappedTrip scrappedTrip = scrappedTripRepository.findByIdAndMember(scrapId, member)
+                .orElseThrow(() -> new IllegalArgumentException("해당 스크랩을 찾을 수 없습니다."));
+
+        // ScrappedTrip으로 ScrappedTripDetail 조회
+        ScrappedTripDetail scrappedTripDetail = scrappedTripDetailRepository.findByScrappedTrip(scrappedTrip)
+                .orElseThrow(() -> new IllegalArgumentException("해당 스크랩의 상세 정보를 찾을 수 없습니다."));
+
+        // DTO에 담아서 반환
+        ScrapTripDetailRes scrapTripDetailRes = new ScrapTripDetailRes(scrappedTrip, scrappedTripDetail);
+
+        return ResponseEntity.ok(ApiResponse.onSuccess(scrapTripDetailRes));
+    }
 }
 
 
