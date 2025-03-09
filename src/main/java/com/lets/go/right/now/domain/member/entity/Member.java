@@ -3,7 +3,7 @@ package com.lets.go.right.now.domain.member.entity;
 import com.lets.go.right.now.domain.expense.entity.ExcludedMember;
 import com.lets.go.right.now.domain.member.dto.JoinReq;
 import com.lets.go.right.now.domain.settlement.entity.PersonalSpending;
-import com.lets.go.right.now.domain.trip.entity.ScrappedTrip;
+import com.lets.go.right.now.domain.scrap.entity.ScrappedTrip;
 import com.lets.go.right.now.domain.trip.entity.TripMember;
 import jakarta.persistence.*;
 import lombok.*;
