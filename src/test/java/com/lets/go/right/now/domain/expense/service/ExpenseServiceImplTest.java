@@ -3,10 +3,10 @@ package com.lets.go.right.now.domain.expense.service;
 import com.lets.go.right.now.domain.expense.dto.ExpenseCreateReq;
 import com.lets.go.right.now.domain.expense.entity.ExcludedMember;
 import com.lets.go.right.now.domain.expense.entity.Expense;
-import com.lets.go.right.now.domain.settlement.entity.SettlementResult;
+import com.lets.go.right.now.domain.settlement.entity.PersonalSpending;
 import com.lets.go.right.now.domain.expense.repository.ExcludedMemberRepository;
 import com.lets.go.right.now.domain.expense.repository.ExpenseRepository;
-import com.lets.go.right.now.domain.settlement.repository.SettlementResultRepository;
+import com.lets.go.right.now.domain.settlement.repository.PersonalSpendingRepository;
 import com.lets.go.right.now.domain.member.entity.Member;
 import com.lets.go.right.now.domain.member.repository.MemberRepository;
 import com.lets.go.right.now.domain.trip.entity.Trip;
@@ -15,6 +15,7 @@ import com.lets.go.right.now.domain.tripMember.repository.TripMemberRepository;
 import com.lets.go.right.now.domain.trip.repository.TripRepository;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
@@ -33,7 +34,7 @@ class ExpenseServiceImplTest {
     @Autowired
     private ExpenseRepository expenseRepository;
     @Autowired
-    private SettlementResultRepository settlementResultRepository;
+    private PersonalSpendingRepository personalSpendingRepository;
     @Autowired
     private ExcludedMemberRepository excludedMemberRepository;
     @Autowired
@@ -56,7 +57,7 @@ class ExpenseServiceImplTest {
         // 지출 생성 요청 (참여자1 제외)
         ExpenseCreateReq request = new ExpenseCreateReq(
                 "식비", 1003, "정산 테스트",
-                LocalDate.now(), "MEALS", "payer@example.com", List.of("user1@example.com")
+                LocalDateTime.now(), "MEALS", "payer@example.com", List.of("user1@example.com")
         );
 
         // When: 지출 생성 API 실행
@@ -73,16 +74,16 @@ class ExpenseServiceImplTest {
         assertThat(excludedMembers.get(0).getExcludedMember().getEmail()).isEqualTo("user1@example.com");
 
         // ✅ SettlementResult(정산 결과) 저장 검증
-        List<SettlementResult> settlements = settlementResultRepository.findAll();
+        List<PersonalSpending> settlements = personalSpendingRepository.findAll();
         assertThat(settlements).hasSize(2); // 결제자 + 참여자2
 
         // 정산 금액 검증 (총 1003원을 결제자와 참여자2가 부담)
-        SettlementResult settlementPayer = settlements.stream()
+        PersonalSpending settlementPayer = settlements.stream()
                 .filter(s -> s.getSender().equals(payer))
                 .findFirst()
                 .orElseThrow();
 
-        SettlementResult settlementMember2 = settlements.stream()
+        PersonalSpending settlementMember2 = settlements.stream()
                 .filter(s -> s.getSender().equals(member2))
                 .findFirst()
                 .orElseThrow();

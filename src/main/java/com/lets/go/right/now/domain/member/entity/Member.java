@@ -1,15 +1,16 @@
 package com.lets.go.right.now.domain.member.entity;
 
 import com.lets.go.right.now.domain.expense.entity.ExcludedMember;
-import com.lets.go.right.now.domain.settlement.entity.SettlementResult;
 import com.lets.go.right.now.domain.member.dto.JoinReq;
+import com.lets.go.right.now.domain.settlement.entity.PersonalSpending;
 import com.lets.go.right.now.domain.trip.entity.ScrappedTrip;
 import com.lets.go.right.now.domain.trip.entity.TripMember;
 import jakarta.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.*;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -42,6 +43,8 @@ public class Member {
                 .build();
     }
 
+    public void changeName(String newName) { this.name = newName; }
+    public void changeAccountNumber(String accountNumber) { this.accountNumber = accountNumber; }
     public void changeProfileImgLink(String profileImgLink) {
         this.profileImgLink = profileImgLink;
     }
@@ -66,10 +69,10 @@ public class Member {
     // 내가 보내야 할 정산 결과
     @Builder.Default
     @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL)
-    List<SettlementResult> settlementSendResults = new ArrayList<>();
+    List<PersonalSpending> settlementSendResults = new ArrayList<>();
 
     // 내가 받아야 할 정산 결과
     @Builder.Default
     @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL)
-    List<SettlementResult> settlementReceiveResults = new ArrayList<>();
+    List<PersonalSpending> settlementReceiveResults = new ArrayList<>();
 }

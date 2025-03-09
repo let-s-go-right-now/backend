@@ -1,9 +1,6 @@
 package com.lets.go.right.now.domain.member.service;
 
-import com.lets.go.right.now.domain.member.dto.AccountReq;
-import com.lets.go.right.now.domain.member.dto.JoinReq;
-import com.lets.go.right.now.domain.member.dto.LoginRes;
-import com.lets.go.right.now.domain.member.dto.LoinReq;
+import com.lets.go.right.now.domain.member.dto.*;
 import com.lets.go.right.now.domain.member.entity.Member;
 import com.lets.go.right.now.domain.member.repository.MemberRepository;
 import com.lets.go.right.now.global.enums.statuscode.ErrorStatus;
@@ -12,8 +9,6 @@ import com.lets.go.right.now.global.jwt.util.JwtUtil;
 import com.lets.go.right.now.global.response.ApiResponse;
 import com.lets.go.right.now.global.s3.service.S3Service;
 import jakarta.transaction.Transactional;
-import java.io.IOException;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -21,6 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @Service
 @RequiredArgsConstructor
@@ -83,8 +80,119 @@ public class MemberServiceImpl implements MemberService{
         return ResponseEntity.ok(ApiResponse.onSuccess(member.getAccountNumber()));
     }
 
+    /**
+     * 회원 탈퇴
+     */
+    @Transactional
+    @Override
+    public ResponseEntity<?> deleteMember(String email) {
+        // 이메일을 통해 사용자 조회 후 삭제
+        memberRepository.deleteByEmail(email);
+        return ResponseEntity.ok(ApiResponse.onSuccess("회원 탈퇴가 정상적으로 처리되었습니다."));
+    }
+
+    /**
+     * 회원 정보 조회
+     */
+    @Override
+    public ResponseEntity<?> getMemberInfo(String email) {
+
+        Member member = memberRepository.findMemberByEmail(email)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
+        // 회원의 이름, 계좌번호, 프로필 사진 반환
+        MemberInfoRes memberInfoRes = new MemberInfoRes(
+                member.getName(),
+                member.getProfileImgLink(),
+                member.getAccountNumber()
+        );
+
+        return ResponseEntity.ok(ApiResponse.onSuccess(memberInfoRes));
+
+    }
+
+    /**
+     * 회원 이름 수정
+     */
+    @Override
+    public ResponseEntity<?> updateName(String email, String newName) {
+
+        Member member = memberRepository.findMemberByEmail(email)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
+        member.changeName(newName);
+        memberRepository.save(member);
+        return ResponseEntity.ok(ApiResponse.onSuccess(ProfileUpdateRes.ofName(newName)));
+    }
+
+    /**
+     * 회원 계좌 번호 수정
+     */
+    @Override
+    public ResponseEntity<?> updateAccountNumber(String email, String newAccountNumber) {
+
+        Member member = memberRepository.findMemberByEmail(email)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
+        member.changeAccountNumber(newAccountNumber);
+        memberRepository.save(member);
+        return ResponseEntity.ok(ApiResponse.onSuccess(ProfileUpdateRes.ofAccountNumber(newAccountNumber)));
+    }
+
+    /**
+     * 회원 프로필 이미지 수정
+     */
+    @Transactional
+    @Override
+    public ResponseEntity<?> updateProfileImgLink(String email, MultipartFile newProfileImg) throws IOException {
+
+        // 1. 이메일로 회원 조회
+        Member member = memberRepository.findMemberByEmail(email)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
+        // 2. 기존 프로필 이미지 삭제
+        if (member.getProfileImgLink() != null && !member.getProfileImgLink().isEmpty()) {
+            s3Service.deleteFileByURL(member.getProfileImgLink());  // URL에서 파일명을 추출하여 삭제
+        }
+
+        // 3. 새 프로필 이미지 업로드
+        String newProfileImgLink = s3Service.uploadFile(newProfileImg);  // S3에 새 이미지 업로드
+
+        // 4. 새 프로필 이미지 URL로 변경
+        member.changeProfileImgLink(newProfileImgLink);
+
+        // 5. DB에 저장
+        memberRepository.save(member);
+
+        return ResponseEntity.ok(ApiResponse.onSuccess(ProfileUpdateRes.ofProfileImgLink(newProfileImgLink)));
+    }
+
+    /**
+     * 회원 프로필 이미지 삭제
+     */
+    @Transactional
+    @Override
+    public ResponseEntity<?> deleteProfileImgLink(String email) {
+
+        // 1. 이메일로 회원 조회
+        Member member = memberRepository.findMemberByEmail(email)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
+        // 2. 기존 프로필 이미지 삭제
+        String profileImgLink = member.getProfileImgLink();
+        if (profileImgLink != null && !profileImgLink.isEmpty()) {
+            s3Service.deleteFileByURL(profileImgLink);  // S3에서 파일 삭제
+            member.changeProfileImgLink(null);  // 프로필 이미지 링크 null로 변경
+            memberRepository.save(member);
+        }
+
+        return ResponseEntity.ok(ApiResponse.onSuccess("해당 회원의 프로필 이미지가 삭제되었습니다"));
+    }
     @Override
     public Member findByEmail(String email) {
-        return null;
+        return memberRepository.findMemberByEmail(email)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
     }
+
 }
+

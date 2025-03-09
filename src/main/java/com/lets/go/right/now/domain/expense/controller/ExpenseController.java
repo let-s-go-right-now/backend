@@ -1,6 +1,7 @@
 package com.lets.go.right.now.domain.expense.controller;
 
 import com.lets.go.right.now.domain.expense.dto.ExpenseCreateReq;
+import com.lets.go.right.now.domain.expense.entity.enums.Category;
 import com.lets.go.right.now.domain.expense.service.ExpenseService;
 import com.lets.go.right.now.global.jwt.dto.CustomUserDetails;
 import java.io.IOException;
@@ -75,5 +76,43 @@ public class ExpenseController {
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "4") int size) {
         return expenseService.getMyExpenses(tripId, customUserDetails.getEmail(), page, size);
+    }
+
+    /**
+     * 여행 회원 별 총 지출액 반환 - 여행에 참여한 회원의 총 지출액 반환
+     */
+    @GetMapping("{trip_id}/member-expenses")
+    public ResponseEntity<?> getTravelMemberExpenses(
+            @PathVariable("trip_id") Long tripId) {
+        return expenseService.getTravelMemberExpenses(tripId);
+    }
+
+
+    /**
+     * 카테고리별 지출 리포트
+     */
+    @GetMapping("{trip_id}/category-report")
+    public ResponseEntity<?> getCategoryReport(
+            @PathVariable("trip_id") Long tripId) {
+        return expenseService.getCategoryReport(tripId);
+    }
+
+    /**
+     * 회원별 카테고리 지출 리포트
+     */
+    @GetMapping("{trip_id}/member-category-report")
+    public ResponseEntity<?> getMemberCategoryReport(
+            @PathVariable("trip_id") Long tripId,
+            @RequestParam(value = "category") Category category) {
+        return expenseService.getMemberCategoryReport(tripId, category);
+    }
+
+    /**
+     * 날짜별 여행 총 지출 리포트
+     */
+    @GetMapping("{trip_id}/daily-expense")
+    public ResponseEntity<?> getDailyExpenseReport(
+            @PathVariable("trip_id") Long tripId) {
+        return expenseService.getDailyExpenseReport(tripId);
     }
 }

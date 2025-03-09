@@ -7,6 +7,11 @@ public interface SettlementService {
     ResponseEntity<?> createPrepayment(
             PaymentCreateReq paymentCreateReq, Long tripId, String senderEmail);
 
-    ResponseEntity<?> createSettlementStatus(
-            PaymentCreateReq paymentCreateReq, Long tripId, String email);
+    ResponseEntity<?> sendTravelSettlement(Long travelSettlementId);
+
+    ResponseEntity<?> calculateTravelSettlement(Long tripId);
+
+    ResponseEntity<?> getTravelSettlementResults(String email, Long tripId);
+
+    ResponseEntity<?> getTravelSettlementStatus(String email, Long tripId);
 }
