@@ -6,6 +6,7 @@ import com.lets.go.right.now.domain.chatgpt.dto.ItineraryDto;
 import com.lets.go.right.now.domain.member.entity.Member;
 import com.lets.go.right.now.domain.member.repository.MemberRepository;
 import com.lets.go.right.now.domain.scrap.dto.ScrapTripReq;
+import com.lets.go.right.now.domain.scrap.dto.ScrapTripRes;
 import com.lets.go.right.now.domain.scrap.entity.ScrappedTrip;
 import com.lets.go.right.now.domain.scrap.entity.ScrappedTripDetail;
 import com.lets.go.right.now.domain.scrap.repository.ScrapTripDetailRepository;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -77,6 +79,22 @@ public class ScrapService {
         }
     }
 
+    public ResponseEntity<?> getScrappedTrips(String email) {
+        // 이메일로 회원 조회
+        Member member = memberRepository.getMemberByEmail(email);
+
+        // 회원 스크랩한 여행 목록 조회
+        List<ScrappedTrip> scrappedTrips = scrappedTripRepository.findByMember(member);
+
+        // ScrappedTrip을 ScrapTripRes DTO로 변환
+        List<ScrapTripRes> scrappedTripResList = scrappedTrips.stream()
+                .map(ScrapTripRes::new) // ScrappedTrip -> ScrapTripRes 변환
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(ApiResponse.onSuccess(scrappedTripResList));
+    }
+
 }
+
 
 
