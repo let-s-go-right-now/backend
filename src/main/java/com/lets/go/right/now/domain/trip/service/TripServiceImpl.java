@@ -116,7 +116,12 @@ public class TripServiceImpl implements TripService {
     @Override
     public TripDetailResponse getTripDetail(Long tripId, Member member) {
         Trip trip = tripRepository.getTripById(tripId);
-        return convertTripToDetailResponse(trip);
+
+        // 여행 멤버 조회
+        List<TripMember> tripMembers = tripMemberRepository.findByTrip(trip);
+        TripMemberListRes tripMemberResDtoList = TripMemberListRes.from(tripMembers);
+
+        return TripDetailResponse.of(trip, tripMemberResDtoList);
     }
 
     @Override
@@ -146,22 +151,4 @@ public class TripServiceImpl implements TripService {
         // 6. 조회된 여행 멤버 리스트를 반환
         return ResponseEntity.ok(ApiResponse.onSuccess(tripMemberResDtoList));
     }
-
-    // private 메서드로 중복 코드 제거: Trip -> TripDetailResponse 변환
-    private TripDetailResponse convertTripToDetailResponse(Trip trip) {
-        TripDetailResponse response = new TripDetailResponse();
-        response.setTripId(trip.getId());
-        response.setName(trip.getName());
-        response.setIntroduce(trip.getIntroduce());
-        response.setStartDate(trip.getStartDate().toString());
-        response.setEndDate(trip.getEndDate().toString());
-
-        // 여행 방장(owner) 정보 추가
-        if (trip.getOwner() != null) {
-            response.setOwner(trip.getOwner());
-        }
-
-        return response;
-    }
-
 }
