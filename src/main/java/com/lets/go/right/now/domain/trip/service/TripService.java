@@ -22,4 +22,6 @@ public interface TripService {
     TripDetailDto getTripDetail(Long tripId, Member member);
     // 특정 여행에 등록된 멤버들 삭제
     ResponseEntity<?> deleteTripMember(Long tripId, Long targetMemberId, String email);
+
+    ResponseEntity<?> getTripMembers(Long tripId);
 }

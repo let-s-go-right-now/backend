@@ -1,5 +1,6 @@
 package com.lets.go.right.now.domain.trip.service;
 
+import com.lets.go.right.now.domain.expense.dto.MemberProfileViewRes;
 import com.lets.go.right.now.domain.expense.entity.TripImage;
 import com.lets.go.right.now.domain.expense.repository.TripImageRepository;
 import com.lets.go.right.now.domain.member.entity.Member;
@@ -10,6 +11,7 @@ import com.lets.go.right.now.domain.trip.dto.TripDetailDto;
 import com.lets.go.right.now.domain.trip.dto.TripDetailResponse;
 import com.lets.go.right.now.domain.trip.dto.TripListDto;
 import com.lets.go.right.now.domain.trip.dto.TripMemberListRes;
+import com.lets.go.right.now.domain.trip.dto.TripParticipantsRes;
 import com.lets.go.right.now.domain.trip.entity.Trip;
 import com.lets.go.right.now.domain.trip.entity.TripMember;
 import com.lets.go.right.now.domain.trip.repository.TripRepository;
@@ -216,4 +218,19 @@ public class TripServiceImpl implements TripService {
         return ResponseEntity.ok(ApiResponse.onSuccess("해당 여행의 멤버에서 삭제되었습니다."));
     }
 
+    /**
+     * 여행 참여자 조회
+     */
+    @Override
+    public ResponseEntity<?> getTripMembers(Long tripId) {
+        // 1. 여행 실존 여부 확인
+        Trip trip = tripRepository.getTripById(tripId);
+        // 2. 여행 참여자 조회
+        List<Member> memberList = trip.getMemberList().stream().map(TripMember::getMember).toList();
+        // 3. 반환 DTO 생성 및 반환
+        List<MemberProfileViewRes> tripMembers
+                = memberList.stream().map(MemberProfileViewRes::of).toList();
+        Member owner = trip.getOwner();
+        return ResponseEntity.ok(ApiResponse.onSuccess(TripParticipantsRes.of(owner,tripMembers)));
+    }
 }

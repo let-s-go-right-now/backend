@@ -46,6 +46,7 @@ public class TripController {
         );
         return ResponseEntity.ok(ApiResponse.onSuccess(TripCreateRes.of(trip)));
     }
+
     // 진행중인 여행조회
     @GetMapping("/ongoing")
     public ResponseEntity<?> getOngoingTrips(
@@ -58,6 +59,7 @@ public class TripController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.onSuccess(ongoingTrips));
     }
+
     // 완료된 여행조회
     @GetMapping("/ended")
     public ResponseEntity<?> getEndedTrips(
@@ -93,4 +95,13 @@ public class TripController {
         return tripService.deleteTripMember(tripId, targetMemberId, customUserDetails.getEmail());
     }
 
+    /**
+     * 여행 참여자 정보 얻어오기
+     */
+    @GetMapping("{trip_id}/trip-member")
+    public ResponseEntity<?> getTripMembers(
+            @PathVariable("trip_id") Long tripId
+        ) {
+        return tripService.getTripMembers(tripId);
+    }
 }
