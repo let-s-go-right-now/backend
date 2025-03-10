@@ -1,7 +1,10 @@
 package com.lets.go.right.now.domain.trip.service;
 
+import com.lets.go.right.now.domain.expense.dto.ExpensePreviewRes;
 import com.lets.go.right.now.domain.expense.dto.MemberProfileViewRes;
+import com.lets.go.right.now.domain.expense.entity.Expense;
 import com.lets.go.right.now.domain.expense.entity.TripImage;
+import com.lets.go.right.now.domain.expense.repository.ExpenseRepository;
 import com.lets.go.right.now.domain.expense.repository.TripImageRepository;
 import com.lets.go.right.now.domain.member.entity.Member;
 import com.lets.go.right.now.domain.member.repository.MemberRepository;
@@ -15,12 +18,15 @@ import com.lets.go.right.now.domain.trip.dto.TripMemberListRes;
 import com.lets.go.right.now.domain.trip.dto.TripParticipantsRes;
 import com.lets.go.right.now.domain.trip.entity.Trip;
 import com.lets.go.right.now.domain.trip.entity.TripMember;
+import com.lets.go.right.now.domain.trip.enums.SortOption;
 import com.lets.go.right.now.domain.trip.repository.TripRepository;
 import com.lets.go.right.now.domain.tripMember.repository.TripMemberRepository;
 import com.lets.go.right.now.global.enums.statuscode.ErrorStatus;
 import com.lets.go.right.now.global.exception.GeneralException;
 import com.lets.go.right.now.global.response.ApiResponse;
+import java.util.ArrayList;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -42,6 +48,7 @@ public class TripServiceImpl implements TripService {
     private final TripImageRepository tripImageRepository;
     private final PersonalSpendingRepository personalSpendingRepository;
     private final MemberRepository memberRepository;
+    private final ExpenseRepository expenseRepository;
 
 
     @Transactional
@@ -276,23 +283,35 @@ public class TripServiceImpl implements TripService {
      * 특정 여행에 대한 지출 목록 조회
      */
     @Override
-    public ResponseEntity<?> getTripExpenses(Long tripId, int size, int page, ) {
+    public ResponseEntity<?> getTripExpenses(Long tripId, int size, int page, SortOption option) {
         // 1. 여행 존재 여부 조회
-
+        Trip trip = tripRepository.getTripById(tripId);
         // 2. 여행 지출 조회(정렬 기준 적용)
-        PageRequest pageRequest = PageRequest.of(page, size);
+        Pageable pageable = getSortPageable(page, size, option);
 
+        Page<Expense> tripExpenses = expenseRepository.findByTrip(trip, pageable);
 
         // 3. 반환 DTO 생성 및 반환
-        return null;
+        ArrayList<ExpensePreviewRes> resultDtoArray = new ArrayList<>();
+        for (Expense expense : tripExpenses.getContent()) {
+            resultDtoArray.add(ExpensePreviewRes.of(expense));
+        }
+        return ResponseEntity.ok(ApiResponse.onSuccess(resultDtoArray));
+
     }
 
-    // 주어진 옵션에 맞춰 정렬
-    public Pageable getPageable(Pageable pageable, Sort.Direction direction, String properties) {
-        return PageRequest.of(
-                pageable.getPageNumber(),
-                pageable.getPageSize(),
-                Sort.by(direction, properties)
-        );
+    // 주어진 옵션에 맞춰 정렬 기준 생성
+    private Pageable getSortPageable(int page, int size, SortOption option) {
+        Sort sort;
+        switch (option) {
+            case LATEST -> sort = Sort.by(Sort.Direction.DESC, "expenseDate");
+            case OLDEST -> sort = Sort.by(Sort.Direction.ASC, "expenseDate");
+            case HIGHEST_EXPENSE -> sort = Sort.by(Sort.Direction.DESC, "price");
+            case LOWEST_EXPENSE -> sort = Sort.by(Sort.Direction.ASC, "price");
+            default -> sort = Sort.by(Sort.Direction.DESC, "expenseDate"); // 기본값: 최신순
+        }
+        return PageRequest.of(page, size, sort);
     }
+
+
 }

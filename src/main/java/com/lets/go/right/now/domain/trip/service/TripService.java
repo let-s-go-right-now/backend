@@ -5,6 +5,7 @@ import com.lets.go.right.now.domain.trip.dto.TripDetailDto;
 import com.lets.go.right.now.domain.trip.dto.TripDetailResponse;
 import com.lets.go.right.now.domain.trip.dto.TripListDto;
 import com.lets.go.right.now.domain.trip.entity.Trip;
+import com.lets.go.right.now.domain.trip.enums.SortOption;
 import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDate;
@@ -26,5 +27,5 @@ public interface TripService {
     // 방장 권한 위임하기
     ResponseEntity<?> delegateTripOwner(Long tripId, Long newOwnerId, String email);
 
-    ResponseEntity<?> getTripExpenses(Long tripId, int page, int size);
+    ResponseEntity<?> getTripExpenses(Long tripId, int page, int size, SortOption option);
 }

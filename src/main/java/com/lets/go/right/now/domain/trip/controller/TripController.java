@@ -124,6 +124,6 @@ public class TripController {
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "4") int size,
             @RequestParam(value = "option") SortOption option) {
-        return tripService.getTripExpenses(tripId, page, size);
+        return tripService.getTripExpenses(tripId, page, size, option);
     }
 }
