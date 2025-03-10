@@ -14,12 +14,13 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/api")
 public class ScrapController {
 
     private final ScrapService scrapService;
 
     // 회원이 스크랩 생성
-    @PostMapping("/api/scrap")
+    @PostMapping("/scrap")
     public ResponseEntity<?> createScrap(
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
             @RequestBody ScrapTripReq scrapTripReq) {
@@ -27,15 +28,21 @@ public class ScrapController {
     }
 
     // 마이페이지에서 회원이 스크랩한 여행 목록 조회
-    @GetMapping("/api/mypage/scrap/list")
+    @GetMapping("/mypage/scraps")
     public ResponseEntity<?> getScrappedTrips(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
         return scrapService.getScrappedTrips(customUserDetails.getEmail());
     }
 
     // 회원이 스크랩한 여행 상세 일정 조회
-    @GetMapping("api/mypage/scrap/{scrap_id}")
+    @GetMapping("/mypage/scrap/{scrap_id}")
     public ResponseEntity<?> getScrappedTripsDetail(@AuthenticationPrincipal CustomUserDetails customUserDetails, @PathVariable("scrap_id") Long scrapId) {
         return scrapService.getScrappedTripsDetail(customUserDetails.getEmail(), scrapId);
+    }
+
+    // 스크랩 삭제
+    @DeleteMapping("/scrap/{scrap_id}")
+    public ResponseEntity<?> deleteScrap(@AuthenticationPrincipal CustomUserDetails customUserDetails, @PathVariable("scrap_id") Long scrapId) {
+        return scrapService.deleteScrap(customUserDetails.getEmail(), scrapId);
     }
 
 }

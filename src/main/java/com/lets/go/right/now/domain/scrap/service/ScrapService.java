@@ -12,6 +12,8 @@ import com.lets.go.right.now.domain.scrap.entity.ScrappedTrip;
 import com.lets.go.right.now.domain.scrap.entity.ScrappedTripDetail;
 import com.lets.go.right.now.domain.scrap.repository.ScrapTripDetailRepository;
 import com.lets.go.right.now.domain.scrap.repository.ScrapTripRepository;
+import com.lets.go.right.now.global.enums.statuscode.ErrorStatus;
+import com.lets.go.right.now.global.exception.GeneralException;
 import com.lets.go.right.now.global.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -113,6 +115,27 @@ public class ScrapService {
         ScrapTripDetailRes scrapTripDetailRes = new ScrapTripDetailRes(scrappedTrip, scrappedTripDetail);
 
         return ResponseEntity.ok(ApiResponse.onSuccess(scrapTripDetailRes));
+    }
+
+    @Transactional
+    public ResponseEntity<?> deleteScrap(String email, Long scrapId) {
+
+        // 회원을 이메일로 조회
+        Member member = memberRepository.findMemberByEmail(email)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
+        // 해당 스크랩을 ID로 조회
+        ScrappedTrip scrap = scrappedTripRepository.findById(scrapId)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.RESOURCE_NOT_FOUND));
+
+        if (!scrap.getMember().equals(member)) {
+            throw new GeneralException(ErrorStatus._FORBIDDEN);
+        }
+
+        // 스크랩 삭제 (scrappedTrip이 삭제되면 scrappedTripDetail도 같이 삭제된다)
+        scrappedTripRepository.delete(scrap);
+
+        return ResponseEntity.ok(ApiResponse.onSuccess("스크랩이 해제되었습니다."));
     }
 }
 
