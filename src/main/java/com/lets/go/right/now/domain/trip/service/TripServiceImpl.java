@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.web.bind.annotation.GetMapping;
 
 @Service
 @RequiredArgsConstructor
@@ -266,5 +267,18 @@ public class TripServiceImpl implements TripService {
         DelegateOwnerRes.MemberDTO newOwnerDTO = DelegateOwnerRes.MemberDTO.fromMember(newOwner);
         return ResponseEntity.ok(ApiResponse.onSuccess(new DelegateOwnerRes(newOwnerDTO)));
 
+    }
+
+    /**
+     * 특정 여행에 대한 지출 목록 조회
+     */
+    @Override
+    public ResponseEntity<?> getTripExpenses(Long tripId) {
+        // 1. 여행 존재 여부 조회
+
+        // 2. 여행 지출 조회(정렬 기준 적용)
+
+        // 3. 반환 DTO 생성 및 반환
+        return null;
     }
 }

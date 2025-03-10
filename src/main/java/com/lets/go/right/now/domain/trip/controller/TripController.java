@@ -101,7 +101,7 @@ public class TripController {
     @GetMapping("{trip_id}/trip-member")
     public ResponseEntity<?> getTripMembers(
             @PathVariable("trip_id") Long tripId
-        ) {
+    ) {
         return tripService.getTripMembers(tripId);
     }
 
@@ -114,4 +114,13 @@ public class TripController {
         return tripService.delegateTripOwner(tripId, req.newOwnerId(), customUserDetails.getEmail());
     }
 
+    /**
+     * 여행에 대한 모든 지출 조회
+     */
+    @GetMapping("{trip_id}/expense")
+    public ResponseEntity<?> getTripExpenses(
+            @PathVariable("trip_id") Long tripId
+    ) {
+        return tripService.getTripExpenses(tripId);
+    }
 }
