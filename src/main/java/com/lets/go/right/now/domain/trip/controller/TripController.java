@@ -87,7 +87,7 @@ public class TripController {
                 .body(ApiResponse.onSuccess(response));
     }
 
-    // 특정 여행 멤버 내보내기 (방장만 가능)
+    // 멤버 내보내기 (방장만 가능)
     @DeleteMapping("/{trip_id}/members/{member_id}")
     public ResponseEntity<?> deleteTripMember(@PathVariable("trip_id") Long tripId,
                                               @PathVariable("member_id") Long targetMemberId, // 삭제 대상 멤버
@@ -104,4 +104,14 @@ public class TripController {
         ) {
         return tripService.getTripMembers(tripId);
     }
+
+    // 방장 권한 위임 (방장만 가능)
+    @PutMapping("/{trip_id}/delegate")
+    public ResponseEntity<?> delegateTripOwner(
+            @PathVariable("trip_id") Long tripId,
+            @RequestBody DelegateOwnerReq req,
+            @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        return tripService.delegateTripOwner(tripId, req.newOwnerId(), customUserDetails.getEmail());
+    }
+
 }

@@ -1,22 +1,13 @@
 package com.lets.go.right.now.domain.trip.entity;
 
-import com.lets.go.right.now.domain.settlement.entity.PersonalSpending;
 import com.lets.go.right.now.domain.member.entity.Member;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import com.lets.go.right.now.domain.settlement.entity.PersonalSpending;
+import jakarta.persistence.*;
+import lombok.*;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import lombok.*;
 
 @Entity
 @Getter
@@ -47,4 +38,10 @@ public class Trip {
     @Builder.Default
     @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL)
     List<PersonalSpending> personalSpendings = new ArrayList<>();
+
+    // 방장을 새로운 멤버로 업데이트
+    public void changeOwner(Member newOwner) {
+        this.owner = newOwner;
+    }
+
 }
