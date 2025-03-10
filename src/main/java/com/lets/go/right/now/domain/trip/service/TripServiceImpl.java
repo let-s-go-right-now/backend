@@ -216,4 +216,16 @@ public class TripServiceImpl implements TripService {
         return ResponseEntity.ok(ApiResponse.onSuccess("해당 여행의 멤버에서 삭제되었습니다."));
     }
 
+    /**
+     * 여행 참여자 조회
+     */
+    @Override
+    public ResponseEntity<?> getTripMembers(Long tripId) {
+        // 1. 여행 실존 여부 확인
+
+        // 2. 여행 참여자 조회
+
+        // 3. 반환 DTO 생성 및 반환
+        return null;
+    }
 }
