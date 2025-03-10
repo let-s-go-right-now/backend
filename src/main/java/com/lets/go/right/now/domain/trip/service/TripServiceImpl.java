@@ -1,7 +1,10 @@
 package com.lets.go.right.now.domain.trip.service;
 
+import com.lets.go.right.now.domain.expense.entity.TripImage;
+import com.lets.go.right.now.domain.expense.repository.TripImageRepository;
 import com.lets.go.right.now.domain.member.entity.Member;
 import com.lets.go.right.now.domain.member.repository.MemberRepository;
+import com.lets.go.right.now.domain.settlement.entity.PersonalSpending;
 import com.lets.go.right.now.domain.trip.dto.TripDetailResponse;
 import com.lets.go.right.now.domain.trip.dto.TripListDto;
 import com.lets.go.right.now.domain.trip.dto.TripMemberListRes;
@@ -29,6 +32,7 @@ public class TripServiceImpl implements TripService {
     private final TripRepository tripRepository;
     private final TripMemberRepository tripMemberRepository;
     private final MemberRepository memberRepository;
+    private final TripImageRepository tripImageRepository;
 
     @Transactional
     @Override
@@ -53,7 +57,7 @@ public class TripServiceImpl implements TripService {
         // 진행 중인 여행 조회
         List<Trip> ongoingTrips = tripRepository.findOngoingTrips(owner, today);
 
-        // DTO 변환 및 여행 멤버 추가
+        // DTO 변환 및 여행 멤버, 지출 내역, 지출 이미지 추가
         return ongoingTrips.stream()
                 .map(trip -> {
                     TripListDto dto = new TripListDto();
@@ -71,10 +75,26 @@ public class TripServiceImpl implements TripService {
                             .collect(Collectors.toList());
 
                     dto.setMembers(memberDtos);
+
+                    // 여행 총 지출액 계산
+                    int totalExpense = trip.getPersonalSpendings().stream()
+                            .mapToInt(PersonalSpending::getAmount)
+                            .sum();
+                    dto.setTotalExpense(totalExpense); // 총 지출액 추가
+
+                    // 여행 지출과 연관된 이미지 조회
+                    List<TripImage> tripImages = tripImageRepository.findAllByTrip(trip);
+                    List<String> expenseImageUrls = tripImages.stream()
+                            .map(TripImage::getImageUrl)
+                            .collect(Collectors.toList());
+
+                    dto.setExpenseImageUrls(expenseImageUrls); // 지출 이미지 URL 추가
+
                     return dto;
                 })
                 .collect(Collectors.toList());
     }
+
 
 
     // 종료된 여행 목록 조회
@@ -104,6 +124,20 @@ public class TripServiceImpl implements TripService {
                             .collect(Collectors.toList());
 
                     dto.setMembers(memberDtos);
+                    // 여행 총 지출액 계산
+                    int totalExpense = trip.getPersonalSpendings().stream()
+                            .mapToInt(PersonalSpending::getAmount)
+                            .sum();
+                    dto.setTotalExpense(totalExpense); // 총 지출액 추가
+
+                    // 여행 지출과 연관된 이미지 조회
+                    List<TripImage> tripImages = tripImageRepository.findAllByTrip(trip);
+                    List<String> expenseImageUrls = tripImages.stream()
+                            .map(TripImage::getImageUrl)
+                            .collect(Collectors.toList());
+
+                    dto.setExpenseImageUrls(expenseImageUrls); // 지출 이미지 URL 추가
+
                     return dto;
                 })
                 .collect(Collectors.toList());

@@ -17,4 +17,6 @@ public class TripListDto {
     private LocalDate endDate;
     private Long ownerid;
     private List<TripMemberListRes.MemberResDto> members;
+    private Integer totalExpense;
+    private List<String> expenseImageUrls;
 }
