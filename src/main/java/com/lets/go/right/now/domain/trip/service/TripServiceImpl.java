@@ -8,6 +8,7 @@ import com.lets.go.right.now.domain.member.repository.MemberRepository;
 import com.lets.go.right.now.domain.settlement.entity.PersonalSpending;
 import com.lets.go.right.now.domain.settlement.repository.PersonalSpendingRepository;
 import com.lets.go.right.now.domain.trip.dto.TripDetailDto;
+import com.lets.go.right.now.domain.trip.dto.DelegateOwnerRes;
 import com.lets.go.right.now.domain.trip.dto.TripDetailResponse;
 import com.lets.go.right.now.domain.trip.dto.TripListDto;
 import com.lets.go.right.now.domain.trip.dto.TripMemberListRes;
@@ -208,7 +209,7 @@ public class TripServiceImpl implements TripService {
         // 4. 삭제할 멤버 정보 조회
         Member targetMember = memberRepository.getMemberById(targetMemberId);
 
-        // 5. 해당 멤버가 해당 여행에 참여 중인지 확인
+        // 5. 해당 여행에 등록된 멤버인지 확인
         TripMember tripMember = tripMemberRepository.findByTripAndMember(trip, targetMember)
                 .orElseThrow(() -> new GeneralException(ErrorStatus._TRIP_MEMBER_NOT_FOUND));
 
@@ -232,5 +233,38 @@ public class TripServiceImpl implements TripService {
                 = memberList.stream().map(MemberProfileViewRes::of).toList();
         Member owner = trip.getOwner();
         return ResponseEntity.ok(ApiResponse.onSuccess(TripParticipantsRes.of(owner,tripMembers)));
+    }
+
+    @Transactional
+    public ResponseEntity<?> delegateTripOwner(Long tripId, Long newOwnerId, String email) {
+
+        // 1. 해당 여행 정보 조회
+        Trip trip = tripRepository.findById(tripId)
+                .orElseThrow(() -> new GeneralException(ErrorStatus._TRIP_NOT_FOUND));
+
+        // 2. 해당 여행의 방장 정보 조회
+        Member tripOwner = memberRepository.getMemberByEmail(email);
+
+        // 3. 위임 요청 하는 회원이 방장인지 확인
+        if (!trip.getOwner().equals(tripOwner)) {
+            throw new GeneralException(ErrorStatus._FORBIDDEN); // 방장 권한인 회원만 위임 가능
+        }
+
+        // 4. 새 방장이 될 멤버 조회
+        Member newOwner = memberRepository.getMemberById(newOwnerId);
+
+        // 5. 새 방장이 될 멤버가 해당 여행의 멤버인지 확인
+        TripMember newOwnerMember = tripMemberRepository.findByTripAndMember(trip, newOwner)
+                .orElseThrow(() -> new GeneralException(ErrorStatus._TRIP_MEMBER_NOT_FOUND));
+
+        // 6. 방장 권한 위임
+        trip.changeOwner(newOwner);
+        tripRepository.save(trip);
+        tripMemberRepository.save(newOwnerMember);
+
+        // 5. 새 방장 정보를 DTO로 변환
+        DelegateOwnerRes.MemberDTO newOwnerDTO = DelegateOwnerRes.MemberDTO.fromMember(newOwner);
+        return ResponseEntity.ok(ApiResponse.onSuccess(new DelegateOwnerRes(newOwnerDTO)));
+
     }
 }
