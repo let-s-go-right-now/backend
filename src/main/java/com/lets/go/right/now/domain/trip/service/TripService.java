@@ -18,7 +18,8 @@ public interface TripService {
     //완료된 여행 목록 조회
     List<TripListDto> getEndedTrips(Member owner);
     //특정 여행 목록 조회
+
     TripDetailDto getTripDetail(Long tripId, Member member);
-    // 특정 여행에 등록된 멤버들 조회
-    ResponseEntity<?> getTripMembers(String email, Long tripId);
+    // 특정 여행에 등록된 멤버들 삭제
+    ResponseEntity<?> deleteTripMember(Long tripId, Long targetMemberId, String email);
 }

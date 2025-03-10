@@ -24,7 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,9 +32,10 @@ public class TripServiceImpl implements TripService {
 
     private final TripRepository tripRepository;
     private final TripMemberRepository tripMemberRepository;
-    private final MemberRepository memberRepository;
     private final TripImageRepository tripImageRepository;
     private final PersonalSpendingRepository personalSpendingRepository;
+    private final MemberRepository memberRepository;
+
 
     @Transactional
     @Override
@@ -146,7 +146,7 @@ public class TripServiceImpl implements TripService {
                 .collect(Collectors.toList());
     }
 
-
+    // 특정 여행 상세 조회(이전, 진행중 모두)
     @Transactional(readOnly = true)
     @Override
     public TripDetailDto getTripDetail(Long tripId, Member member) {
@@ -187,31 +187,33 @@ public class TripServiceImpl implements TripService {
     }
 
 
+    @Transactional
     @Override
-    public ResponseEntity<?> getTripMembers(String email, Long tripId) {
+    public ResponseEntity<?> deleteTripMember(Long tripId, Long targetMemberId, String email) {
 
-        // 1. 이메일을 기반으로 회원을 조회
-        Member member = memberRepository.findMemberByEmail(email)
-                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
-
-        // 2. 여행(tripId)을 기반으로 해당 여행을 조회
+        // 1. 해당 여행 정보 조회
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new GeneralException(ErrorStatus._TRIP_NOT_FOUND));
 
-        // 3. 여행에 등록된 멤버인지 확인
-        Optional<TripMember> tripMember = tripMemberRepository.findByTripAndMember(trip, member);
-        if (tripMember.isEmpty()) {
-            // 사용자가 해당 여행에 등록된 멤버가 아닐 경우
-            throw new GeneralException(ErrorStatus._TRIP_MEMBER_NOT_FOUND);
+        // 2. 해당 여행의 방장 정보 조회
+        Member tripOwner = memberRepository.getMemberByEmail(email);
+
+        // 3. 삭제 요청 하는 회원이 방장인지 확인
+        if (!trip.getOwner().equals(tripOwner)) {
+            throw new GeneralException(ErrorStatus._FORBIDDEN); // 방장 권한인 회원만 멤버 삭제 가능
         }
 
-        // 4. 해당 여행에 등록된 멤버들을 조회
-        List<TripMember> tripMembers = tripMemberRepository.findByTrip(trip);
+        // 4. 삭제할 멤버 정보 조회
+        Member targetMember = memberRepository.getMemberById(targetMemberId);
 
-        // 5. 멤버들을 DTO로 변환
-        TripMemberListRes tripMemberResDtoList = TripMemberListRes.from(tripMembers);
+        // 5. 해당 멤버가 해당 여행에 참여 중인지 확인
+        TripMember tripMember = tripMemberRepository.findByTripAndMember(trip, targetMember)
+                .orElseThrow(() -> new GeneralException(ErrorStatus._TRIP_MEMBER_NOT_FOUND));
 
-        // 6. 조회된 여행 멤버 리스트를 반환
-        return ResponseEntity.ok(ApiResponse.onSuccess(tripMemberResDtoList));
+        // 6. 해당 멤버 삭제
+        tripMemberRepository.delete(tripMember);
+
+        return ResponseEntity.ok(ApiResponse.onSuccess("해당 여행의 멤버에서 삭제되었습니다."));
     }
+
 }

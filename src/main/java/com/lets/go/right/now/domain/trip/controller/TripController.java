@@ -85,10 +85,12 @@ public class TripController {
                 .body(ApiResponse.onSuccess(response));
     }
 
-    // 특정 여행에 등록된 멤버 조회
-    @GetMapping("/{tripId}/members")
-    public ResponseEntity<?> getTripMembers(@AuthenticationPrincipal CustomUserDetails customUserDetails,
-                                            @PathVariable Long tripId) {
-        return tripService.getTripMembers(customUserDetails.getEmail(), tripId);
+    // 특정 여행 멤버 내보내기 (방장만 가능)
+    @DeleteMapping("/{trip_id}/members/{member_id}")
+    public ResponseEntity<?> deleteTripMember(@PathVariable("trip_id") Long tripId,
+                                              @PathVariable("member_id") Long targetMemberId, // 삭제 대상 멤버
+                                              @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        return tripService.deleteTripMember(tripId, targetMemberId, customUserDetails.getEmail());
     }
+
 }
