@@ -51,7 +51,7 @@ public class TripController {
     }
     // 진행중인 여행조회
     @GetMapping("/ongoing")
-    public ResponseEntity<ApiResponse<List<TripListDto>>> getOngoingTrips(
+    public ResponseEntity<?> getOngoingTrips(
             @AuthenticationPrincipal CustomUserDetails customUserDetails) {
 
         Member owner = memberRepository.findMemberByEmail(customUserDetails.getEmail())
@@ -63,7 +63,7 @@ public class TripController {
     }
     // 완료된 여행조회
     @GetMapping("/ended")
-    public ResponseEntity<ApiResponse<List<TripListDto>>> getEndedTrips(
+    public ResponseEntity<?> getEndedTrips(
             @AuthenticationPrincipal CustomUserDetails customUserDetails) {
 
         Member owner = memberRepository.findMemberByEmail(customUserDetails.getEmail())
@@ -76,7 +76,7 @@ public class TripController {
 
     // 특정여행 상세조회
     @GetMapping("/{tripId}")
-    public ResponseEntity<TripDetailResponse> getTripDetail(
+    public ResponseEntity<?> getTripDetail(
             @PathVariable("tripId") Long tripId,
             @AuthenticationPrincipal CustomUserDetails customUserDetails) {
 
@@ -84,7 +84,8 @@ public class TripController {
                 .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
 
         TripDetailResponse response = tripService.getTripDetail(tripId, member);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.onSuccess(response));
     }
 
     // 특정 여행에 등록된 멤버 조회
