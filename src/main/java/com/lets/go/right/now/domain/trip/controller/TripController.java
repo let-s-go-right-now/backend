@@ -87,10 +87,4 @@ public class TripController {
         return ResponseEntity.ok(response);
     }
 
-    // 특정 여행에 등록된 멤버 조회
-    @GetMapping("/{tripId}/members")
-    public ResponseEntity<?> getTripMembers(@AuthenticationPrincipal CustomUserDetails customUserDetails,
-                                            @PathVariable Long tripId) {
-        return tripService.getTripMembers(customUserDetails.getEmail(), tripId);
-    }
 }
