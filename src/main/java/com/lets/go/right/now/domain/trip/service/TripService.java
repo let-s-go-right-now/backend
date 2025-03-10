@@ -1,6 +1,7 @@
 package com.lets.go.right.now.domain.trip.service;
 
 import com.lets.go.right.now.domain.member.entity.Member;
+import com.lets.go.right.now.domain.trip.dto.TripDetailDto;
 import com.lets.go.right.now.domain.trip.dto.TripDetailResponse;
 import com.lets.go.right.now.domain.trip.dto.TripListDto;
 import com.lets.go.right.now.domain.trip.entity.Trip;
@@ -17,7 +18,8 @@ public interface TripService {
     //완료된 여행 목록 조회
     List<TripListDto> getEndedTrips(Member owner);
     //특정 여행 목록 조회
-    TripDetailResponse getTripDetail(Long tripId, Member member);
-    // 특정 여행 멤버 내보내기 (방장만 가능)
+
+    TripDetailDto getTripDetail(Long tripId, Member member);
+    // 특정 여행에 등록된 멤버들 삭제
     ResponseEntity<?> deleteTripMember(Long tripId, Long targetMemberId, String email);
 }
