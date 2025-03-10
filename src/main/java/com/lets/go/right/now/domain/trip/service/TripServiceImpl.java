@@ -3,6 +3,7 @@ package com.lets.go.right.now.domain.trip.service;
 import com.lets.go.right.now.domain.expense.entity.TripImage;
 import com.lets.go.right.now.domain.expense.repository.TripImageRepository;
 import com.lets.go.right.now.domain.member.entity.Member;
+import com.lets.go.right.now.domain.member.repository.MemberRepository;
 import com.lets.go.right.now.domain.settlement.entity.PersonalSpending;
 import com.lets.go.right.now.domain.trip.dto.TripDetailResponse;
 import com.lets.go.right.now.domain.trip.dto.TripListDto;
@@ -11,7 +12,11 @@ import com.lets.go.right.now.domain.trip.entity.Trip;
 import com.lets.go.right.now.domain.trip.entity.TripMember;
 import com.lets.go.right.now.domain.trip.repository.TripRepository;
 import com.lets.go.right.now.domain.tripMember.repository.TripMemberRepository;
+import com.lets.go.right.now.global.enums.statuscode.ErrorStatus;
+import com.lets.go.right.now.global.exception.GeneralException;
+import com.lets.go.right.now.global.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +31,7 @@ public class TripServiceImpl implements TripService {
     private final TripRepository tripRepository;
     private final TripMemberRepository tripMemberRepository;
     private final TripImageRepository tripImageRepository;
+    private final MemberRepository memberRepository;
 
     @Transactional
     @Override
@@ -148,4 +154,34 @@ public class TripServiceImpl implements TripService {
 
         return TripDetailResponse.of(trip, tripMemberResDtoList);
     }
+
+    @Transactional
+    @Override
+    public ResponseEntity<?> deleteTripMember(Long tripId, Long targetMemberId, String email) {
+
+        // 1. 해당 여행 정보 조회
+        Trip trip = tripRepository.findById(tripId)
+                .orElseThrow(() -> new GeneralException(ErrorStatus._TRIP_NOT_FOUND));
+
+        // 2. 해당 여행의 방장 정보 조회
+        Member tripOwner = memberRepository.getMemberByEmail(email);
+
+        // 3. 삭제 요청 하는 회원이 방장인지 확인
+        if (!trip.getOwner().equals(tripOwner)) {
+            throw new GeneralException(ErrorStatus._FORBIDDEN); // 방장 권한인 회원만 멤버 삭제 가능
+        }
+
+        // 4. 삭제할 멤버 정보 조회
+        Member targetMember = memberRepository.getMemberById(targetMemberId);
+
+        // 5. 해당 멤버가 해당 여행에 참여 중인지 확인
+        TripMember tripMember = tripMemberRepository.findByTripAndMember(trip, targetMember)
+                .orElseThrow(() -> new GeneralException(ErrorStatus._TRIP_MEMBER_NOT_FOUND));
+
+        // 6. 해당 멤버 삭제
+        tripMemberRepository.delete(tripMember);
+
+        return ResponseEntity.ok(ApiResponse.onSuccess("해당 여행의 멤버에서 삭제되었습니다."));
+    }
+
 }

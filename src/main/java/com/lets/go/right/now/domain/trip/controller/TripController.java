@@ -2,10 +2,7 @@ package com.lets.go.right.now.domain.trip.controller;
 
 import com.lets.go.right.now.domain.member.entity.Member;
 import com.lets.go.right.now.domain.member.repository.MemberRepository;
-import com.lets.go.right.now.domain.trip.dto.TripCreateRequest;
-import com.lets.go.right.now.domain.trip.dto.TripCreateRes;
-import com.lets.go.right.now.domain.trip.dto.TripDetailResponse;
-import com.lets.go.right.now.domain.trip.dto.TripListDto;
+import com.lets.go.right.now.domain.trip.dto.*;
 import com.lets.go.right.now.domain.trip.entity.Trip;
 import com.lets.go.right.now.domain.trip.service.TripService;
 import com.lets.go.right.now.global.enums.statuscode.ErrorStatus;
@@ -85,6 +82,14 @@ public class TripController {
 
         TripDetailResponse response = tripService.getTripDetail(tripId, member);
         return ResponseEntity.ok(response);
+    }
+
+    // 특정 여행 멤버 내보내기 (방장만 가능)
+    @DeleteMapping("/{trip_id}/members/{member_id}")
+    public ResponseEntity<?> deleteTripMember(@PathVariable("trip_id") Long tripId,
+                                              @PathVariable("member_id") Long targetMemberId, // 삭제 대상 멤버
+                                              @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        return tripService.deleteTripMember(tripId, targetMemberId, customUserDetails.getEmail());
     }
 
 }
