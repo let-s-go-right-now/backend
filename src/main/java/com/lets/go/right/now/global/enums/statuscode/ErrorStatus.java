@@ -50,7 +50,10 @@ public enum ErrorStatus implements BaseCode {
 	_CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "CATEGORY4001", "해당하는 카테고리가 존재 하지 않습니다."),
 
 	// Travel Settlement Error
-	_TRAVEL_SETTLEMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "TRAVELSETTLEMENT4001", "해당하는 정산 현황이 존재 하지 않습니다.");
+	_TRAVEL_SETTLEMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "TRAVELSETTLEMENT4001", "해당하는 정산 현황이 존재 하지 않습니다."),
+
+	// 정렬 기준 오류
+	_INVALID_SORT_OPTION(HttpStatus.BAD_REQUEST,"SORTOPTION4001","올바르지 않은 정렬 옵션입니다. (사용 가능: LATEST, OLDEST, HIGHEST_EXPENSE, LOWEST_EXPENSE)");
 
 
 	private final HttpStatus httpStatus;

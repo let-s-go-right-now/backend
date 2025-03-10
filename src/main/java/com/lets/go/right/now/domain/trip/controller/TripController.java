@@ -115,15 +115,26 @@ public class TripController {
         return tripService.delegateTripOwner(tripId, req.newOwnerId(), customUserDetails.getEmail());
     }
 
+
     /**
-     * 여행에 대한 모든 지출 조회
+     * 특정 여행에 대한 모든 지출 조회
      */
     @GetMapping("{trip_id}/expense")
     public ResponseEntity<?> getTripExpenses(
             @PathVariable("trip_id") Long tripId,
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "4") int size,
-            @RequestParam(value = "option") SortOption option) {
+            @RequestParam(value = "option", defaultValue = "LATEST") String optionStr) {
+
+        // SortOption 변환 및 예외 처리
+        SortOption option;
+        try {
+            option = SortOption.valueOf(optionStr.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new GeneralException(ErrorStatus._INVALID_SORT_OPTION);
+        }
+
         return tripService.getTripExpenses(tripId, page, size, option);
     }
+
 }
