@@ -4,6 +4,7 @@ import com.lets.go.right.now.domain.member.entity.Member;
 import com.lets.go.right.now.domain.member.repository.MemberRepository;
 import com.lets.go.right.now.domain.trip.dto.*;
 import com.lets.go.right.now.domain.trip.entity.Trip;
+import com.lets.go.right.now.domain.trip.enums.SortOption;
 import com.lets.go.right.now.domain.trip.service.TripService;
 import com.lets.go.right.now.global.enums.statuscode.ErrorStatus;
 import com.lets.go.right.now.global.exception.GeneralException;
@@ -119,8 +120,10 @@ public class TripController {
      */
     @GetMapping("{trip_id}/expense")
     public ResponseEntity<?> getTripExpenses(
-            @PathVariable("trip_id") Long tripId
-    ) {
-        return tripService.getTripExpenses(tripId);
+            @PathVariable("trip_id") Long tripId,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "4") int size,
+            @RequestParam(value = "option") SortOption option) {
+        return tripService.getTripExpenses(tripId, page, size);
     }
 }

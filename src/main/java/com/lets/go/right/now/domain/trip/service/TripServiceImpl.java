@@ -21,6 +21,9 @@ import com.lets.go.right.now.global.enums.statuscode.ErrorStatus;
 import com.lets.go.right.now.global.exception.GeneralException;
 import com.lets.go.right.now.global.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -273,12 +276,23 @@ public class TripServiceImpl implements TripService {
      * 특정 여행에 대한 지출 목록 조회
      */
     @Override
-    public ResponseEntity<?> getTripExpenses(Long tripId) {
+    public ResponseEntity<?> getTripExpenses(Long tripId, int size, int page, ) {
         // 1. 여행 존재 여부 조회
 
         // 2. 여행 지출 조회(정렬 기준 적용)
+        PageRequest pageRequest = PageRequest.of(page, size);
+
 
         // 3. 반환 DTO 생성 및 반환
         return null;
+    }
+
+    // 주어진 옵션에 맞춰 정렬
+    public Pageable getPageable(Pageable pageable, Sort.Direction direction, String properties) {
+        return PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                Sort.by(direction, properties)
+        );
     }
 }

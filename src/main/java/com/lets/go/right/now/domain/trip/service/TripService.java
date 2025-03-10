@@ -26,5 +26,5 @@ public interface TripService {
     // 방장 권한 위임하기
     ResponseEntity<?> delegateTripOwner(Long tripId, Long newOwnerId, String email);
 
-    ResponseEntity<?> getTripExpenses(Long tripId);
+    ResponseEntity<?> getTripExpenses(Long tripId, int page, int size);
 }
