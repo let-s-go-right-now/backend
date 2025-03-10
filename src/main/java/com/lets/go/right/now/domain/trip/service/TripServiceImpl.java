@@ -302,6 +302,9 @@ public class TripServiceImpl implements TripService {
 
     // 주어진 옵션에 맞춰 정렬 기준 생성
     private Pageable getSortPageable(int page, int size, SortOption option) {
+        if (size < 1) {
+            size = 4;
+        }
         Sort sort;
         switch (option) {
             case LATEST -> sort = Sort.by(Sort.Direction.DESC, "expenseDate");
@@ -312,6 +315,4 @@ public class TripServiceImpl implements TripService {
         }
         return PageRequest.of(page, size, sort);
     }
-
-
 }
