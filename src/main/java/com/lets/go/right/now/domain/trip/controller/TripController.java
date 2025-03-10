@@ -2,10 +2,7 @@ package com.lets.go.right.now.domain.trip.controller;
 
 import com.lets.go.right.now.domain.member.entity.Member;
 import com.lets.go.right.now.domain.member.repository.MemberRepository;
-import com.lets.go.right.now.domain.trip.dto.TripCreateRequest;
-import com.lets.go.right.now.domain.trip.dto.TripCreateRes;
-import com.lets.go.right.now.domain.trip.dto.TripDetailResponse;
-import com.lets.go.right.now.domain.trip.dto.TripListDto;
+import com.lets.go.right.now.domain.trip.dto.*;
 import com.lets.go.right.now.domain.trip.entity.Trip;
 import com.lets.go.right.now.domain.trip.service.TripService;
 import com.lets.go.right.now.global.enums.statuscode.ErrorStatus;
@@ -83,7 +80,7 @@ public class TripController {
         Member member = memberRepository.findMemberByEmail(customUserDetails.getEmail())
                 .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
 
-        TripDetailResponse response = tripService.getTripDetail(tripId, member);
+        TripDetailDto response = tripService.getTripDetail(tripId, member);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.onSuccess(response));
     }

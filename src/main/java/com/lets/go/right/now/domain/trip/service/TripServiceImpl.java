@@ -5,6 +5,7 @@ import com.lets.go.right.now.domain.expense.repository.TripImageRepository;
 import com.lets.go.right.now.domain.member.entity.Member;
 import com.lets.go.right.now.domain.member.repository.MemberRepository;
 import com.lets.go.right.now.domain.settlement.entity.PersonalSpending;
+import com.lets.go.right.now.domain.settlement.repository.PersonalSpendingRepository;
 import com.lets.go.right.now.domain.trip.dto.TripDetailDto;
 import com.lets.go.right.now.domain.trip.dto.TripDetailResponse;
 import com.lets.go.right.now.domain.trip.dto.TripListDto;
@@ -34,6 +35,7 @@ public class TripServiceImpl implements TripService {
     private final TripMemberRepository tripMemberRepository;
     private final MemberRepository memberRepository;
     private final TripImageRepository tripImageRepository;
+    private final PersonalSpendingRepository personalSpendingRepository;
 
     @Transactional
     @Override
@@ -167,16 +169,20 @@ public class TripServiceImpl implements TripService {
                 .map(TripImage::getImageUrl)
                 .collect(Collectors.toList());
 
+        // 여행과 연관된 개인 지출 내역 조회
+        List<PersonalSpending> personalSpendings = personalSpendingRepository.findByTrip(trip);
+
         return TripDetailDto.builder()
                 .id(trip.getId())
                 .name(trip.getName())
                 .introduce(trip.getIntroduce())
                 .startDate(trip.getStartDate())
                 .endDate(trip.getEndDate())
-                .ownerId(trip.getOwner().getId()) // 필드명 수정
+                .ownerId(trip.getOwner().getId())
                 .members(memberDtos)
                 .totalExpense(totalExpense)
                 .expenseImageUrls(expenseImageUrls)
+                .personalSpendings(personalSpendings)
                 .build();
     }
 
