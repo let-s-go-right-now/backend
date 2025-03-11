@@ -1,5 +1,6 @@
 package com.lets.go.right.now.domain.trip.entity;
 
+import com.lets.go.right.now.domain.expense.entity.Expense;
 import com.lets.go.right.now.domain.member.entity.Member;
 import com.lets.go.right.now.domain.settlement.entity.PersonalSpending;
 import jakarta.persistence.*;
@@ -43,5 +44,10 @@ public class Trip {
     public void changeOwner(Member newOwner) {
         this.owner = newOwner;
     }
+
+    // 해당 여행의 모든 지출 내역 가져오기
+    @Builder.Default
+    @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL)
+    private List<Expense> expenses = new ArrayList<>(); // 여행과 관련된 지출 내역 추가
 
 }

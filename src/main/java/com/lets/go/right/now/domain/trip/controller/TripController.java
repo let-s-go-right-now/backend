@@ -74,18 +74,11 @@ public class TripController {
                 .body(ApiResponse.onSuccess(ongoingTrips));
     }
 
-    // 특정여행 상세조회
-    @GetMapping("/{tripId}")
+    // 특정 여행 상세 조회 (이전 여행, 진행 중인 여행 모두 해당)
+    @GetMapping("/{trip_id}")
     public ResponseEntity<?> getTripDetail(
-            @PathVariable("tripId") Long tripId,
-            @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-
-        Member member = memberRepository.findMemberByEmail(customUserDetails.getEmail())
-                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
-
-        TripDetailDto response = tripService.getTripDetail(tripId, member);
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(ApiResponse.onSuccess(response));
+            @PathVariable("trip_id") Long tripId) {
+        return tripService.getTripDetail(tripId);
     }
 
     // 멤버 내보내기 (방장만 가능)
