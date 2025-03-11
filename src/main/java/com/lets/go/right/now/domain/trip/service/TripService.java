@@ -1,22 +1,20 @@
 package com.lets.go.right.now.domain.trip.service;
 
 import com.lets.go.right.now.domain.member.entity.Member;
-import com.lets.go.right.now.domain.trip.dto.TripListDto;
 import com.lets.go.right.now.domain.trip.entity.Trip;
 import com.lets.go.right.now.domain.trip.enums.SortOption;
 import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDate;
-import java.util.List;
 
 public interface TripService {
     Trip createTrip(String name, String introduce, LocalDate startDate, LocalDate endDate, Member owner);
 
-    // 진행중인 여행 목록 조회
-    List<TripListDto> getOngoingTrips(Member owner);
-    //완료된 여행 목록 조회
-    List<TripListDto> getEndedTrips(Member owner);
-    //특정 여행 목록 조회
+    // 진행 중인 여행 목록 조회
+    ResponseEntity<?> getOngoingTrips(String email);
+    // 이전 여행 목록 조회
+    ResponseEntity<?> getEndedTrips(String email);
+    // 특정 여행 목록 조회
     ResponseEntity<?> getTripDetail(Long tripId);
     // 멤버 내보내기 (방장만 가능)
     ResponseEntity<?> deleteTripMember(Long tripId, Long targetMemberId, String email);
