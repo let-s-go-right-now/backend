@@ -125,7 +125,6 @@ public class TripController {
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "4") int size,
             @RequestParam(value = "option", defaultValue = "LATEST") String optionStr) {
-
         // SortOption 변환 및 예외 처리
         SortOption option;
         try {
