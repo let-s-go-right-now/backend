@@ -3,10 +3,12 @@ package com.lets.go.right.now.domain.scrap.dto;
 import com.lets.go.right.now.domain.scrap.entity.ScrappedTrip;
 import com.lets.go.right.now.domain.scrap.entity.ScrappedTripDetail;
 
+import java.time.LocalDate;
+
 public record ScrapTripDetailRes(
         String title,
-        String startDate,
-        String endDate,
+        LocalDate startDate,
+        LocalDate endDate,
         int budget,
         String departure,
         String transportation,
