@@ -284,36 +284,52 @@ public class TripServiceImpl implements TripService {
      * 특정 여행에 대한 지출 목록 조회
      */
     @Override
-    public ResponseEntity<?> getTripExpenses(Long tripId, int size, int page, SortOption option) {
+    public ResponseEntity<?> getTripExpenses(Long tripId, int page, int size, SortOption option) {
+        System.out.println("========service=========");
+        System.out.println("page : " + page);
+        System.out.println("size : " + size);
+
         // 1. 여행 존재 여부 조회
         Trip trip = tripRepository.getTripById(tripId);
+
         // 2. 여행 지출 조회(정렬 기준 적용)
         Pageable pageable = getSortPageable(page, size, option);
-
         Page<Expense> tripExpenses = expenseRepository.findByTrip(trip, pageable);
 
         // 3. 반환 DTO 생성 및 반환
-        ArrayList<ExpensePreviewRes> resultDtoArray = new ArrayList<>();
-        for (Expense expense : tripExpenses.getContent()) {
-            resultDtoArray.add(ExpensePreviewRes.of(expense));
-        }
+        List<ExpensePreviewRes> resultDtoArray = tripExpenses.getContent().stream()
+                .map(ExpensePreviewRes::of)
+                .toList();
         return ResponseEntity.ok(ApiResponse.onSuccess(resultDtoArray));
-
     }
 
     // 주어진 옵션에 맞춰 정렬 기준 생성
     private Pageable getSortPageable(int page, int size, SortOption option) {
-        if (size < 1) {
-            size = 4;
-        }
-        Sort sort;
+        // 기본 정렬 필드 설정
+        String sortField = "createdAt";
+        Sort.Direction direction = Sort.Direction.DESC; // 기본값: 최신순
+
+        // 옵션별 정렬 필드 변경
         switch (option) {
-            case LATEST -> sort = Sort.by(Sort.Direction.DESC, "expenseDate");
-            case OLDEST -> sort = Sort.by(Sort.Direction.ASC, "expenseDate");
-            case HIGHEST_EXPENSE -> sort = Sort.by(Sort.Direction.DESC, "price");
-            case LOWEST_EXPENSE -> sort = Sort.by(Sort.Direction.ASC, "price");
-            default -> sort = Sort.by(Sort.Direction.DESC, "expenseDate"); // 기본값: 최신순
+            case LATEST -> {
+                sortField = "createdAt";
+                direction = Sort.Direction.DESC;
+            }
+            case OLDEST -> {
+                sortField = "createdAt";
+                direction = Sort.Direction.ASC;
+            }
+            case HIGHEST_EXPENSE -> {
+                sortField = "price";
+                direction = Sort.Direction.DESC;
+            }
+            case LOWEST_EXPENSE -> {
+                sortField = "price";
+                direction = Sort.Direction.ASC;
+            }
         }
-        return PageRequest.of(page, size, sort);
+
+        return PageRequest.of(page, size, Sort.by(direction, sortField));
     }
+
 }
