@@ -32,7 +32,7 @@ public class ScrappedTrip {
 
     private int budget; // 여행 예산
 
-    @Column(name = "transportation_mode")
+    @Column(name = "transport_mode")
     private String transportMode; // 교통 수단
 
     @Column(name = "scrapped_at", nullable = false, updatable = false)
