@@ -129,4 +129,9 @@ public class TripController {
         return tripService.getTripExpenses(tripId, page, size, option);
     }
 
+    // 특정 여행 관리 페이지 조회
+    @GetMapping("/{trip_id}/info")
+    public ResponseEntity<?> getTripInfo(@PathVariable("trip_id") Long tripId) {
+        return tripService.getTripInfo(tripId);
+    }
 }

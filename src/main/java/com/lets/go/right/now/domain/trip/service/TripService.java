@@ -26,4 +26,6 @@ public interface TripService {
     ResponseEntity<?> delegateTripOwner(Long tripId, Long newOwnerId, String email);
 
     ResponseEntity<?> getTripExpenses(Long tripId, int page, int size, SortOption option);
+    // 특정 여행 관리 페이지 조회
+    ResponseEntity<?> getTripInfo(Long tripId);
 }

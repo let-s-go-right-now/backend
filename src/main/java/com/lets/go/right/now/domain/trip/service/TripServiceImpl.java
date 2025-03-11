@@ -29,7 +29,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -303,6 +302,7 @@ public class TripServiceImpl implements TripService {
         return ResponseEntity.ok(ApiResponse.onSuccess(resultDtoArray));
     }
 
+
     // 주어진 옵션에 맞춰 정렬 기준 생성
     private Pageable getSortPageable(int page, int size, SortOption option) {
         // 기본 정렬 필드 설정
@@ -330,6 +330,14 @@ public class TripServiceImpl implements TripService {
         }
 
         return PageRequest.of(page, size, Sort.by(direction, sortField));
+    }
+
+    // 특정 여행 관리 페이지 조회
+    @Override
+    public ResponseEntity<?> getTripInfo(Long tripId) {
+        Trip trip = tripRepository.getTripById(tripId);
+        TripInfoRes res = TripInfoRes.from(trip);
+        return ResponseEntity.ok(ApiResponse.onSuccess(res));
     }
 
 }
