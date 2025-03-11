@@ -9,13 +9,7 @@ import com.lets.go.right.now.domain.expense.repository.TripImageRepository;
 import com.lets.go.right.now.domain.member.entity.Member;
 import com.lets.go.right.now.domain.member.repository.MemberRepository;
 import com.lets.go.right.now.domain.settlement.entity.PersonalSpending;
-import com.lets.go.right.now.domain.settlement.repository.PersonalSpendingRepository;
-import com.lets.go.right.now.domain.trip.dto.TripDetailDto;
-import com.lets.go.right.now.domain.trip.dto.DelegateOwnerRes;
-import com.lets.go.right.now.domain.trip.dto.TripDetailResponse;
-import com.lets.go.right.now.domain.trip.dto.TripListDto;
-import com.lets.go.right.now.domain.trip.dto.TripMemberListRes;
-import com.lets.go.right.now.domain.trip.dto.TripParticipantsRes;
+import com.lets.go.right.now.domain.trip.dto.*;
 import com.lets.go.right.now.domain.trip.entity.Trip;
 import com.lets.go.right.now.domain.trip.entity.TripMember;
 import com.lets.go.right.now.domain.trip.enums.SortOption;
@@ -24,20 +18,20 @@ import com.lets.go.right.now.domain.tripMember.repository.TripMemberRepository;
 import com.lets.go.right.now.global.enums.statuscode.ErrorStatus;
 import com.lets.go.right.now.global.exception.GeneralException;
 import com.lets.go.right.now.global.response.ApiResponse;
-import java.util.ArrayList;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.springframework.web.bind.annotation.GetMapping;
 
 @Service
 @RequiredArgsConstructor
@@ -46,7 +40,6 @@ public class TripServiceImpl implements TripService {
     private final TripRepository tripRepository;
     private final TripMemberRepository tripMemberRepository;
     private final TripImageRepository tripImageRepository;
-    private final PersonalSpendingRepository personalSpendingRepository;
     private final MemberRepository memberRepository;
     private final ExpenseRepository expenseRepository;
 
@@ -160,10 +153,12 @@ public class TripServiceImpl implements TripService {
                 .collect(Collectors.toList());
     }
 
-    // 특정 여행 상세 조회(이전, 진행중 모두)
+    // 특정 여행 상세 조회 (이전 여행, 진행 중인 여행 모두 해당)
     @Transactional(readOnly = true)
     @Override
-    public TripDetailDto getTripDetail(Long tripId, Member member) {
+    public ResponseEntity<?> getTripDetail(Long tripId) {
+
+        // 여행 정보 조회
         Trip trip = tripRepository.getTripById(tripId);
 
         // 여행 멤버 조회 및 DTO 변환
@@ -173,33 +168,39 @@ public class TripServiceImpl implements TripService {
                 .collect(Collectors.toList());
 
         // 여행 총 지출액 계산
-        int totalExpense = trip.getPersonalSpendings().stream()
-                .mapToInt(PersonalSpending::getAmount)
-                .sum();
+        int totalExpense = expenseRepository.findByTrip(trip).stream()  // trip 객체로 Expense 조회
+                .mapToInt(Expense::getPrice)  // 각 Expense의 price를 가져옴
+                .sum();  // 합산
 
-        // 여행 지출과 연관된 이미지 조회
-        List<TripImage> tripImages = tripImageRepository.findAllByTrip(trip);
-        List<String> expenseImageUrls = tripImages.stream()
-                .map(TripImage::getImageUrl)
+        // 여행의 모든 지출 정보 가져오기
+        List<TripDetailDto.ExpenseResDto> expenseDtos = trip.getExpenses().stream()
+                .map(expense -> TripDetailDto.ExpenseResDto.builder()
+                        .expenseName(expense.getExpenseName())  // 지출 이름
+                        .price(expense.getPrice())              // 지출 금액
+                        .expenseDate(expense.getExpenseDate())  // 지출 날짜
+                        .category(expense.getCategory().name()) // 지출 카테고리
+                        .imageUrls(expense.getTripImages().stream()  // 지출 이미지 URL
+                                .map(TripImage::getImageUrl)
+                                .collect(Collectors.toList()))
+                        .build()
+                )
                 .collect(Collectors.toList());
 
-        // 여행과 연관된 개인 지출 내역 조회
-        List<PersonalSpending> personalSpendings = personalSpendingRepository.findByTrip(trip);
+        // DTO 반환
+        TripDetailDto response = TripDetailDto.builder()
+                                    .id(trip.getId())                  // 여행 ID
+                                    .name(trip.getName())              // 여행 이름
+                                    .introduce(trip.getIntroduce())    // 여행 소개
+                                    .startDate(trip.getStartDate())    // 여행 시작 날짜
+                                    .endDate(trip.getEndDate())        // 여행 종료 날짜
+                                    .ownerId(trip.getOwner().getId())  // 방장 ID
+                                    .members(memberDtos)               // 여행 멤버 리스트
+                                    .totalExpense(totalExpense)        // 총 지출 금액
+                                    .expenses(expenseDtos)             // 지출 내역
+                                    .build();
 
-        return TripDetailDto.builder()
-                .id(trip.getId())
-                .name(trip.getName())
-                .introduce(trip.getIntroduce())
-                .startDate(trip.getStartDate())
-                .endDate(trip.getEndDate())
-                .ownerId(trip.getOwner().getId())
-                .members(memberDtos)
-                .totalExpense(totalExpense)
-                .expenseImageUrls(expenseImageUrls)
-                .personalSpendings(personalSpendings)
-                .build();
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.onSuccess(response));
     }
-
 
     @Transactional
     @Override
