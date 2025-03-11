@@ -2,7 +2,9 @@ package com.lets.go.right.now.domain.trip.controller;
 
 import com.lets.go.right.now.domain.member.entity.Member;
 import com.lets.go.right.now.domain.member.repository.MemberRepository;
-import com.lets.go.right.now.domain.trip.dto.*;
+import com.lets.go.right.now.domain.trip.dto.DelegateOwnerReq;
+import com.lets.go.right.now.domain.trip.dto.TripCreateRequest;
+import com.lets.go.right.now.domain.trip.dto.TripCreateRes;
 import com.lets.go.right.now.domain.trip.entity.Trip;
 import com.lets.go.right.now.domain.trip.enums.SortOption;
 import com.lets.go.right.now.domain.trip.service.TripService;
@@ -11,13 +13,11 @@ import com.lets.go.right.now.global.exception.GeneralException;
 import com.lets.go.right.now.global.jwt.dto.CustomUserDetails;
 import com.lets.go.right.now.global.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @RestController
 @RequestMapping("api/trip")
@@ -48,30 +48,18 @@ public class TripController {
         return ResponseEntity.ok(ApiResponse.onSuccess(TripCreateRes.of(trip)));
     }
 
-    // 진행중인 여행조회
+    // 진행 중인 여행 조회
     @GetMapping("/ongoing")
     public ResponseEntity<?> getOngoingTrips(
             @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-
-        Member owner = memberRepository.findMemberByEmail(customUserDetails.getEmail())
-                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
-
-        List<TripListDto> ongoingTrips = tripService.getOngoingTrips(owner);
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(ApiResponse.onSuccess(ongoingTrips));
+        return tripService.getOngoingTrips(customUserDetails.getEmail());
     }
 
-    // 완료된 여행조회
+    // 이전 여행 목록 조회
     @GetMapping("/ended")
     public ResponseEntity<?> getEndedTrips(
             @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-
-        Member owner = memberRepository.findMemberByEmail(customUserDetails.getEmail())
-                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
-
-        List<TripListDto> ongoingTrips = tripService.getEndedTrips(owner);
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(ApiResponse.onSuccess(ongoingTrips));
+        return tripService.getEndedTrips(customUserDetails.getEmail());
     }
 
     // 특정 여행 상세 조회 (이전 여행, 진행 중인 여행 모두 해당)

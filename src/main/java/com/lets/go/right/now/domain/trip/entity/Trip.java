@@ -3,6 +3,7 @@ package com.lets.go.right.now.domain.trip.entity;
 import com.lets.go.right.now.domain.expense.entity.Expense;
 import com.lets.go.right.now.domain.member.entity.Member;
 import com.lets.go.right.now.domain.settlement.entity.PersonalSpending;
+import com.lets.go.right.now.domain.settlement.entity.TravelSettlement;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -49,5 +50,10 @@ public class Trip {
     @Builder.Default
     @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL)
     private List<Expense> expenses = new ArrayList<>(); // 여행과 관련된 지출 내역 추가
+
+    // 해당 여행의 정산 결과
+    @Builder.Default
+    @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL)
+    private List<TravelSettlement> travelSettlements = new ArrayList<>();
 
 }
