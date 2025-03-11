@@ -22,9 +22,7 @@ public class ScrapTripReq {
 
     // gpt 응답 (ChatGptResDto에서 필요한 필드만)
     private String title;
-    private String description;
     private String transportation;
-    private int cost;
     private List<ItineraryDto> itinerary;
 
 }
