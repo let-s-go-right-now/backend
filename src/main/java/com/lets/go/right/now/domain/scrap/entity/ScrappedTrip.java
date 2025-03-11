@@ -4,6 +4,7 @@ import com.lets.go.right.now.domain.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -25,10 +26,10 @@ public class ScrappedTrip {
     private String title; // 여행 제목
 
     @Column(name = "start_date")
-    private String startDate; // 여행 시작일
+    private LocalDate startDate; // 여행 시작일
 
     @Column(name = "end_date")
-    private String endDate; // 여행 종료일
+    private LocalDate endDate; // 여행 종료일
 
     private int budget; // 여행 예산
 
@@ -41,7 +42,7 @@ public class ScrappedTrip {
     @OneToOne(mappedBy = "scrappedTrip", cascade = CascadeType.ALL, orphanRemoval = true)
     private ScrappedTripDetail scrappedTripDetail;
 
-    public ScrappedTrip(Member member, String title, String startDate, String endDate, Integer budget, String transportMode) {
+    public ScrappedTrip(Member member, String title, LocalDate startDate, LocalDate endDate, Integer budget, String transportMode) {
         this.member = member;
         this.title = title;
         this.startDate = startDate;
