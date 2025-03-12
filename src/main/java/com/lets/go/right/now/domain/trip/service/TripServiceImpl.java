@@ -77,14 +77,18 @@ public class TripServiceImpl implements TripService {
         return ResponseEntity.ok(ApiResponse.onSuccess(resultDtoList));
     }
 
-    // 이전 여행 목록 조회
+    /**
+     * 이전 여행 목록 조회
+     */
     @Transactional(readOnly = true)
     @Override
     public ResponseEntity<?> getEndedTrips(String email) {
-        // 1. 해당 회원이 속한 모든 여행 조회
+        // 1. 회원 존재 여부 조회
         Member member = memberRepository.getMemberByEmail(email);
-        List<TripMember> tripMembers = tripMemberRepository.findByMemberId(member.getId());
-
+        // 2. 상태 종료된 여행 조회
+        List<TripMember> tripMembers
+                = tripMemberRepository.findMyTripByStatus(member, Status.DONE);
+        List<Trip> endedTrips = tripMembers.stream().map(TripMember::getTrip).toList();
         // 2. 종료된 여행 조회 (정산 상태가 DONE인 여행만)
         List<TripListDto> endedTrips = tripMembers.stream()
                 .map(tripMember -> tripRepository.findEndedTripsByTripId(tripMember.getTrip().getId()))
