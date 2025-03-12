@@ -62,20 +62,44 @@ public class TripServiceImpl implements TripService {
     @Transactional(readOnly = true)
     @Override
     public ResponseEntity<?> getOngoingTrips(String email) {
-        // 1. 해당 회원이 속한 모든 여행 조회
+        // 1. 해당 회원 조회
         Member member = memberRepository.getMemberByEmail(email);
 
-        List<TripMember> tripMembers
-                = tripMemberRepository.findMyTripByStatus(member, Status.PROGRESS);
+        // 2. 상태에 맞는 여행 조회
+        List<TripMember> tripMembers = tripMemberRepository.findMyTripByStatus(member, Status.PROGRESS);
+        List<Trip> trips = tripMembers.stream().map(TripMember::getTrip).toList();
 
-        List<Trip> ongoingTrips = tripMembers.stream().map(TripMember::getTrip).toList();
-        ArrayList<TripPreviewDto> resultDtoList = new ArrayList<>();
-        for (Trip ongoingTrip : ongoingTrips) {
-            resultDtoList.add(TripPreviewDto.of(ongoingTrip));
+        ArrayList<TripListDto> resultDtoList = new ArrayList<>();
+
+        for (Trip trip : trips) {
+            ArrayList<MemberProfileViewRes> memberProfileViewRes = new ArrayList<>();
+            List<Member> memberList = trip.getMemberList().stream().map(TripMember::getMember).toList();
+
+            // 여행 총 지출액 계산
+            int totalExpense = trip.getExpenses().stream()
+                    .mapToInt(Expense::getPrice)
+                    .sum();  // 합산
+
+            // 지출 이미지 URL 조회
+            List<String> expenseImageUrls = trip.getExpenses().stream()
+                    .flatMap(expense -> expense.getTripImages().stream())
+                    .map(TripImage::getImageUrl)
+                    .collect(Collectors.toList());
+
+            // 여행 멤버 프로필 추가
+            for (Member m : memberList) {
+                memberProfileViewRes.add(MemberProfileViewRes.of(m));
+            }
+
+            // DTO 생성 후 결과 리스트에 추가
+            resultDtoList.add(
+                    TripListDto.of(trip, memberProfileViewRes.stream().toList(), totalExpense, expenseImageUrls));
         }
 
         return ResponseEntity.ok(ApiResponse.onSuccess(resultDtoList));
     }
+
+
 
     /**
      * 이전 여행 목록 조회
@@ -83,37 +107,43 @@ public class TripServiceImpl implements TripService {
     @Transactional(readOnly = true)
     @Override
     public ResponseEntity<?> getEndedTrips(String email) {
-        // 1. 회원 존재 여부 조회
+        // 1. 해당 회원 조회
         Member member = memberRepository.getMemberByEmail(email);
-        // 2. 상태 종료된 여행 조회
-        List<TripMember> tripMembers
-                = tripMemberRepository.findMyTripByStatus(member, Status.DONE);
-        List<Trip> endedTrips = tripMembers.stream().map(TripMember::getTrip).toList();
+
+        // 2. 상태에 맞는 여행 조회
+        List<TripMember> tripMembers = tripMemberRepository.findMyTripByStatus(member, Status.DONE);
+        List<Trip> trips = tripMembers.stream().map(TripMember::getTrip).toList();
+
         ArrayList<TripListDto> resultDtoList = new ArrayList<>();
 
-        for (Trip endedTrip : endedTrips) {
+        for (Trip trip : trips) {
             ArrayList<MemberProfileViewRes> memberProfileViewRes = new ArrayList<>();
-            List<Member> memberList = endedTrip.getMemberList().stream().map(TripMember::getMember).toList();
+            List<Member> memberList = trip.getMemberList().stream().map(TripMember::getMember).toList();
 
             // 여행 총 지출액 계산
-            int totalExpense = endedTrip.getExpenses().stream()
+            int totalExpense = trip.getExpenses().stream()
                     .mapToInt(Expense::getPrice)
                     .sum();  // 합산
 
-            List<String> expenseImageUrls = endedTrip.getExpenses().stream()
+            // 지출 이미지 URL 조회
+            List<String> expenseImageUrls = trip.getExpenses().stream()
                     .flatMap(expense -> expense.getTripImages().stream())
-                    .map(TripImage::getImageUrl)  // TripImage 객체에서 이미지 URL 추출
+                    .map(TripImage::getImageUrl)
                     .collect(Collectors.toList());
 
+            // 여행 멤버 프로필 추가
             for (Member m : memberList) {
                 memberProfileViewRes.add(MemberProfileViewRes.of(m));
             }
+
+            // DTO 생성 후 결과 리스트에 추가
             resultDtoList.add(
-                    TripListDto.of(endedTrip, memberProfileViewRes.stream().toList(), totalExpense, expenseImageUrls));
+                    TripListDto.of(trip, memberProfileViewRes.stream().toList(), totalExpense, expenseImageUrls));
         }
 
         return ResponseEntity.ok(ApiResponse.onSuccess(resultDtoList));
     }
+
 
     // 특정 여행 상세 조회 (이전 여행, 진행 중인 여행 모두 해당)
     @Transactional(readOnly = true)
