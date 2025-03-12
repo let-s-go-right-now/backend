@@ -4,6 +4,7 @@ import com.lets.go.right.now.domain.expense.entity.Expense;
 import com.lets.go.right.now.domain.member.entity.Member;
 import com.lets.go.right.now.domain.settlement.entity.PersonalSpending;
 import com.lets.go.right.now.domain.settlement.entity.TravelSettlement;
+import com.lets.go.right.now.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -17,7 +18,7 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "Trip")
-public class Trip {
+public class Trip extends BaseEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "trip_id")
     private Long id;

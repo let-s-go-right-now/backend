@@ -13,9 +13,11 @@ import com.lets.go.right.now.domain.trip.entity.TripMember;
 import com.lets.go.right.now.domain.trip.enums.SortOption;
 import com.lets.go.right.now.domain.trip.repository.TripRepository;
 import com.lets.go.right.now.domain.tripMember.repository.TripMemberRepository;
+import com.lets.go.right.now.global.enums.Status;
 import com.lets.go.right.now.global.enums.statuscode.ErrorStatus;
 import com.lets.go.right.now.global.exception.GeneralException;
 import com.lets.go.right.now.global.response.ApiResponse;
+import java.util.ArrayList;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -54,104 +56,63 @@ public class TripServiceImpl implements TripService {
         return tripRepository.save(trip);
     }
 
-    // 진행 중인 여행 목록 조회
+    /**
+     * 진행 중인 여행 목록 조회
+     */
     @Transactional(readOnly = true)
     @Override
     public ResponseEntity<?> getOngoingTrips(String email) {
         // 1. 해당 회원이 속한 모든 여행 조회
         Member member = memberRepository.getMemberByEmail(email);
-        List<TripMember> tripMembers = tripMemberRepository.findByMemberId(member.getId());
 
-        // 2. 진행 중인 여행 조회 (정산 상태가 PROGRESS인 여행만)
-        List<TripListDto> ongoingTrips = tripMembers.stream()
-                .map(tripMember -> tripRepository.findOngoingTripsByTripId(tripMember.getTrip().getId()))
-                .flatMap(List::stream)  // 여러 개의 리스트를 하나로 합침
-                .map(trip -> {
-                    // 여행에 참여한 멤버들 목록
-                    List<TripMemberListRes.MemberResDto> tripMemberList = trip.getMemberList().stream()
-                            .map(tm -> new TripMemberListRes.MemberResDto(tm.getMember()))  // MemberResDto로 변환
-                            .collect(Collectors.toList());
+        List<TripMember> tripMembers
+                = tripMemberRepository.findMyTripByStatus(member, Status.PROGRESS);
 
-                    // 지출 관련 여행 사진 URL들을 가져오기
-                    List<String> expenseImageUrls = trip.getExpenses().stream()
-                            .flatMap(expense -> expense.getTripImages().stream())
-                            .map(TripImage::getImageUrl)  // TripImage 객체에서 이미지 URL 추출
-                            .collect(Collectors.toList());
+        List<Trip> ongoingTrips = tripMembers.stream().map(TripMember::getTrip).toList();
+        ArrayList<TripPreviewDto> resultDtoList = new ArrayList<>();
+        for (Trip ongoingTrip : ongoingTrips) {
+            resultDtoList.add(TripPreviewDto.of(ongoingTrip));
+        }
 
-                    // 여행 총 지출액 계산
-                    int totalExpense = trip.getExpenses().stream()
-                            .mapToInt(Expense::getPrice)  // 각 Expense의 price를 가져옴
-                            .sum();  // 합산
-
-                    // 해당 여행의 방장 정보 가져오기
-                    Member owner = trip.getOwner();
-
-                    // TripListDto 객체 생성
-                    return new TripListDto(
-                            trip.getId(),
-                            trip.getName(),
-                            trip.getIntroduce(),
-                            trip.getStartDate(),
-                            trip.getEndDate(),
-                            owner.getId(),
-                            tripMemberList,
-                            totalExpense,
-                            expenseImageUrls
-                    );
-                })
-                .collect(Collectors.toList());
-
-        return ResponseEntity.ok(ApiResponse.onSuccess(ongoingTrips));
+        return ResponseEntity.ok(ApiResponse.onSuccess(resultDtoList));
     }
 
-    // 이전 여행 목록 조회
+    /**
+     * 이전 여행 목록 조회
+     */
     @Transactional(readOnly = true)
     @Override
     public ResponseEntity<?> getEndedTrips(String email) {
-        // 1. 해당 회원이 속한 모든 여행 조회
+        // 1. 회원 존재 여부 조회
         Member member = memberRepository.getMemberByEmail(email);
-        List<TripMember> tripMembers = tripMemberRepository.findByMemberId(member.getId());
+        // 2. 상태 종료된 여행 조회
+        List<TripMember> tripMembers
+                = tripMemberRepository.findMyTripByStatus(member, Status.DONE);
+        List<Trip> endedTrips = tripMembers.stream().map(TripMember::getTrip).toList();
+        ArrayList<TripListDto> resultDtoList = new ArrayList<>();
 
-        // 2. 종료된 여행 조회 (정산 상태가 DONE인 여행만)
-        List<TripListDto> endedTrips = tripMembers.stream()
-                .map(tripMember -> tripRepository.findEndedTripsByTripId(tripMember.getTrip().getId()))
-                .flatMap(List::stream)  // 여러 개의 리스트를 하나로 합침
-                .map(trip -> {
-                    // 여행에 참여한 멤버들 목록
-                    List<TripMemberListRes.MemberResDto> tripMemberList = trip.getMemberList().stream()
-                            .map(tm -> new TripMemberListRes.MemberResDto(tm.getMember()))  // MemberResDto로 변환
-                            .collect(Collectors.toList());
+        for (Trip endedTrip : endedTrips) {
+            ArrayList<MemberProfileViewRes> memberProfileViewRes = new ArrayList<>();
+            List<Member> memberList = endedTrip.getMemberList().stream().map(TripMember::getMember).toList();
 
-                    // 지출 관련 여행 사진 URL들을 가져오기
-                    List<String> expenseImageUrls = trip.getExpenses().stream()
-                            .flatMap(expense -> expense.getTripImages().stream())
-                            .map(TripImage::getImageUrl)  // TripImage 객체에서 이미지 URL 추출
-                            .collect(Collectors.toList());
+            // 여행 총 지출액 계산
+            int totalExpense = endedTrip.getExpenses().stream()
+                    .mapToInt(Expense::getPrice)
+                    .sum();  // 합산
 
-                    // 여행 총 지출액 계산
-                    int totalExpense = trip.getExpenses().stream()
-                            .mapToInt(Expense::getPrice)  // 각 Expense의 price를 가져옴
-                            .sum();  // 합산
+            List<String> expenseImageUrls = endedTrip.getExpenses().stream()
+                    .flatMap(expense -> expense.getTripImages().stream())
+                    .map(TripImage::getImageUrl)  // TripImage 객체에서 이미지 URL 추출
+                    .collect(Collectors.toList());
 
-                    // 해당 여행의 방장 정보 가져오기
-                    Member owner = trip.getOwner();
+            for (Member m : memberList) {
+                memberProfileViewRes.add(MemberProfileViewRes.of(m));
+            }
+            resultDtoList.add(
+                    TripListDto.of(endedTrip, memberProfileViewRes.stream().toList(), totalExpense, expenseImageUrls));
+        }
 
-                    // TripListDto 객체 생성
-                    return new TripListDto(
-                            trip.getId(),
-                            trip.getName(),
-                            trip.getIntroduce(),
-                            trip.getStartDate(),
-                            trip.getEndDate(),
-                            owner.getId(),
-                            tripMemberList,
-                            totalExpense,
-                            expenseImageUrls
-                    );
-                })
-                .collect(Collectors.toList());
-
-        return ResponseEntity.ok(ApiResponse.onSuccess(endedTrips));
+        return ResponseEntity.ok(ApiResponse.onSuccess(resultDtoList));
     }
 
     // 특정 여행 상세 조회 (이전 여행, 진행 중인 여행 모두 해당)
