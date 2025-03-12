@@ -13,6 +13,7 @@ import com.lets.go.right.now.domain.trip.entity.TripMember;
 import com.lets.go.right.now.domain.trip.enums.SortOption;
 import com.lets.go.right.now.domain.trip.repository.TripRepository;
 import com.lets.go.right.now.domain.tripMember.repository.TripMemberRepository;
+import com.lets.go.right.now.global.enums.Status;
 import com.lets.go.right.now.global.enums.statuscode.ErrorStatus;
 import com.lets.go.right.now.global.exception.GeneralException;
 import com.lets.go.right.now.global.response.ApiResponse;
@@ -60,7 +61,9 @@ public class TripServiceImpl implements TripService {
     public ResponseEntity<?> getOngoingTrips(String email) {
         // 1. 해당 회원이 속한 모든 여행 조회
         Member member = memberRepository.getMemberByEmail(email);
-        List<TripMember> tripMembers = tripMemberRepository.findByMemberId(member.getId());
+
+        List<TripMember> tripMembers
+                = tripMemberRepository.findMyTripByStatus(member, Status.PROGRESS);
 
         // 2. 진행 중인 여행 조회 (정산 상태가 PROGRESS인 여행만)
         List<TripListDto> ongoingTrips = tripMembers.stream()
