@@ -8,8 +8,6 @@ import lombok.Setter;
 import java.time.LocalDate;
 import java.util.List;
 
-@Setter
-@Getter
 public record TripListDto (
     Long id,
     String name,
