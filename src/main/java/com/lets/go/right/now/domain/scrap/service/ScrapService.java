@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lets.go.right.now.domain.chatgpt.dto.ItineraryDto;
 import com.lets.go.right.now.domain.member.entity.Member;
 import com.lets.go.right.now.domain.member.repository.MemberRepository;
+import com.lets.go.right.now.domain.scrap.dto.ScrapIdRes;
 import com.lets.go.right.now.domain.scrap.dto.ScrapTripDetailRes;
 import com.lets.go.right.now.domain.scrap.dto.ScrapTripReq;
 import com.lets.go.right.now.domain.scrap.dto.ScrapTripRes;
@@ -70,7 +71,10 @@ public class ScrapService {
         // ScrappedTripDetail 저장
         scrappedTripDetailRepository.save(scrappedTripDetail);
 
-        return ResponseEntity.ok(ApiResponse.onSuccess("해당 여행지 정보가 스크랩 되었습니다."));
+        // scrap_id 반환
+        ScrapIdRes scrapId = new ScrapIdRes(scrappedTrip.getId());
+
+        return ResponseEntity.ok(ApiResponse.onSuccess(scrapId));
     }
 
     // DB에 itinerary를 JSON 형식으로 저장하기 위해 변환
