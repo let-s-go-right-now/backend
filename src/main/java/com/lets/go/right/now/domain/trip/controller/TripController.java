@@ -122,4 +122,14 @@ public class TripController {
     public ResponseEntity<?> getTripInfo(@PathVariable("trip_id") Long tripId) {
         return tripService.getTripInfo(tripId);
     }
+
+    /**
+     * 여행 종료하기
+     */
+    @PutMapping("{trip_id}/end")
+    public ResponseEntity<?> endTrip(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
+            @PathVariable("trip_id") Long tripId) {
+        return tripService.endTrip(customUserDetails.getEmail(), tripId);
+    }
 }

@@ -44,13 +44,18 @@ public enum ErrorStatus implements BaseCode {
 
 	// settlement Error
 	_SETTLEMENT_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "SETTLEMENT4001", "지출에 참여하는 회원이 존재하지 않습니다."),
-	_SETTLEMENT_NOT_FINISH(HttpStatus.FORBIDDEN, "SETTLEMENT4002", "요청한 회원의 아직 정산이 종료되지 않았습니다."),
+	_SETTLEMENT_NOT_FINISH(HttpStatus.FORBIDDEN, "SETTLEMENT4002", "모든 회원의 정산이 완료되지 않았습니다."),
 
 	// Category Error
 	_CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "CATEGORY4001", "해당하는 카테고리가 존재 하지 않습니다."),
 
 	// Travel Settlement Error
 	_TRAVEL_SETTLEMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "TRAVELSETTLEMENT4001", "해당하는 정산 현황이 존재 하지 않습니다."),
+
+	// Trip Status Error
+	_TRIP_NOT_ENDED(HttpStatus.BAD_REQUEST, "TRIP4002", "여행이 끝난 후에 정산 결과를 확인할 수 있습니다."),
+	_TRIP_ALREADY_ENDED(HttpStatus.BAD_REQUEST, "TRIP4003", "여행이 이미 종료되었습니다."),
+	_NOT_TRIP_OWNER(HttpStatus.FORBIDDEN, "TRIP4004", "여행 방장만 여행을 종료할 수 있습니다."),
 
 	// 정렬 기준 오류
 	_INVALID_SORT_OPTION(HttpStatus.BAD_REQUEST,"SORTOPTION4001","올바르지 않은 정렬 옵션입니다. (사용 가능: LATEST, OLDEST, HIGHEST_EXPENSE, LOWEST_EXPENSE)");

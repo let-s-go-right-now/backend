@@ -3,11 +3,7 @@ package com.lets.go.right.now.domain.settlement.service;
 import com.lets.go.right.now.domain.expense.dto.MemberProfileViewRes;
 import com.lets.go.right.now.domain.member.entity.Member;
 import com.lets.go.right.now.domain.member.repository.MemberRepository;
-import com.lets.go.right.now.domain.settlement.dto.PaymentCreateReq;
-import com.lets.go.right.now.domain.settlement.dto.TravelSettlementResult;
-import com.lets.go.right.now.domain.settlement.dto.TravelSettlementResultRes;
-import com.lets.go.right.now.domain.settlement.dto.TravelSettlementStatus;
-import com.lets.go.right.now.domain.settlement.dto.TravelSettlementStatusRes;
+import com.lets.go.right.now.domain.settlement.dto.*;
 import com.lets.go.right.now.domain.settlement.entity.PersonalSpending;
 import com.lets.go.right.now.domain.settlement.entity.TravelSettlement;
 import com.lets.go.right.now.domain.settlement.repository.PersonalSpendingRepository;
@@ -21,14 +17,15 @@ import com.lets.go.right.now.global.enums.statuscode.ErrorStatus;
 import com.lets.go.right.now.global.exception.GeneralException;
 import com.lets.go.right.now.global.response.ApiResponse;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
 
 @Service
 @Transactional
@@ -47,18 +44,23 @@ public class SettlementServiceImpl implements SettlementService {
     public ResponseEntity<?> calculateTravelSettlement(Long tripId) {
         // 1. 여행 존재 여부 확인
         Trip trip = tripRepository.getTripById(tripId);
+        
+        // 2. 여행이 끝났는지 확인
+        if (!trip.isTripEnded()) {
+            throw new GeneralException(ErrorStatus._TRIP_NOT_ENDED);
+        }
 
-        // 2. 해당 여행의 개인별 지출 정보 조회
+        // 3. 해당 여행의 개인별 지출 정보 조회
         List<PersonalSpending> spendingList = personalSpendingRepository.findByTrip(trip);
 
-        // 3. (sender_id, receiver_id) 기준으로 그룹화하여 총 송금액 계산
+        // 4. (sender_id, receiver_id) 기준으로 그룹화하여 총 송금액 계산
         Map<List<Long>, Integer> groupedSettlement = spendingList.stream()
                 .collect(Collectors.groupingBy(
                         spending -> List.of(spending.getSender().getId(), spending.getReceiver().getId()),
                         Collectors.summingInt(PersonalSpending::getAmount)
                 ));
 
-        // 4. 계산된 정산 정보 travel_settlement 테이블에 저장
+        // 5. 계산된 정산 정보 travel_settlement 테이블에 저장
         List<TravelSettlement> settlements = groupedSettlement.entrySet().stream()
                 .map(entry -> {
                     Member sender = memberRepository.getMemberById(entry.getKey().get(0));
@@ -69,7 +71,7 @@ public class SettlementServiceImpl implements SettlementService {
 
         travelSettlementRepository.saveAll(settlements);
 
-        return ResponseEntity.ok(ApiResponse.onSuccess("정산이 완료되었습니다."));
+        return ResponseEntity.ok(ApiResponse.onSuccess("정산을 요청합니다."));
     }
 
     /**
@@ -117,12 +119,24 @@ public class SettlementServiceImpl implements SettlementService {
         Member member = memberRepository.getMemberByEmail(email);
         // 여행 조회
         Trip trip = tripRepository.getTripById(tripId);
+        
+        // 여행이 끝나지 않았으면 정산 결과를 볼 수 없음
+        if (!trip.isTripEnded()) {
+            throw new GeneralException(ErrorStatus._TRIP_NOT_ENDED);
+        }
+        
         // 해당 회원이 여행의 일원인지 확인
         TripMember tripMember = tripMemberRepository.getByTripAndMember(trip, member);
 
         // 본인 부담금도 포함하여 조회
         List<TravelSettlement> myTravelSettlement =
                 travelSettlementRepository.findMyTravelSettlement(member,trip);
+
+        // 정산 데이터가 없으면 빈 결과 반환
+        if (myTravelSettlement.isEmpty()) {
+            TravelSettlementResultRes resultDto = TravelSettlementResultRes.of(0, new ArrayList<>());
+            return ResponseEntity.ok(ApiResponse.onSuccess(resultDto));
+        }
 
         Integer totalAmount = 0;
         ArrayList<TravelSettlementResult> resultDtoList = new ArrayList<>();
