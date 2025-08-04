@@ -26,4 +26,7 @@ public interface TripService {
     ResponseEntity<?> getTripExpenses(Long tripId, int page, int size, SortOption option);
     // 특정 여행 관리 페이지 조회
     ResponseEntity<?> getTripInfo(Long tripId);
+    
+    // 여행 종료하기
+    ResponseEntity<?> endTrip(String email, Long tripId);
 }

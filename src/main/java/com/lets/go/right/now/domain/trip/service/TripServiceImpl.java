@@ -17,7 +17,6 @@ import com.lets.go.right.now.global.enums.Status;
 import com.lets.go.right.now.global.enums.statuscode.ErrorStatus;
 import com.lets.go.right.now.global.exception.GeneralException;
 import com.lets.go.right.now.global.response.ApiResponse;
-import java.util.ArrayList;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -29,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -44,13 +44,7 @@ public class TripServiceImpl implements TripService {
     @Transactional
     @Override
     public Trip createTrip(String name, String introduce, LocalDate startDate, LocalDate endDate, Member owner) {
-        Trip trip = Trip.builder()
-                .name(name)
-                .introduce(introduce)
-                .startDate(startDate)
-                .endDate(endDate)
-                .owner(owner)
-                .build();
+        Trip trip = Trip.toEntity(name, introduce, startDate, endDate, owner);
         TripMember tripMember = TripMember.toEntity(trip, owner);
         tripMemberRepository.save(tripMember);
         return tripRepository.save(trip);
@@ -331,6 +325,36 @@ public class TripServiceImpl implements TripService {
         Trip trip = tripRepository.getTripById(tripId);
         TripInfoRes res = TripInfoRes.from(trip);
         return ResponseEntity.ok(ApiResponse.onSuccess(res));
+    }
+
+    /**
+     * 여행 종료하기
+     */
+    @Transactional
+    @Override
+    public ResponseEntity<?> endTrip(String email, Long tripId) {
+        // 회원 조회
+        Member member = memberRepository.getMemberByEmail(email);
+        // 여행 조회
+        Trip trip = tripRepository.getTripById(tripId);
+        
+        // 여행 방장만 여행을 종료할 수 있음
+        if (!trip.getOwner().equals(member)) {
+            throw new GeneralException(ErrorStatus._NOT_TRIP_OWNER);
+        }
+        
+        // 여행이 이미 종료되었는지 확인
+        if (trip.isTripEnded()) {
+            throw new GeneralException(ErrorStatus._TRIP_ALREADY_ENDED);
+        }
+        
+        // 여행 종료
+        trip.endTrip();
+        
+        // 데이터베이스에 변경사항 저장
+        tripRepository.save(trip);
+        
+        return ResponseEntity.ok(ApiResponse.onSuccess("여행이 종료되었습니다."));
     }
 
 }
