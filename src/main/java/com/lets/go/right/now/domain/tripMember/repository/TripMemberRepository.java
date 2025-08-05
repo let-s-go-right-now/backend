@@ -29,6 +29,7 @@ public interface TripMemberRepository extends JpaRepository<TripMember, Long> {
     // 목적에 맞는 여행 조회
     // PROGRESS = 정산 진행중 - 진행중인 여행
     // DONE = 정산 완료 - 이전 여행
-    @Query("SELECT tm FROM TripMember tm WHERE tm.member = :member and tm.settlementStatus = :status")
-    List<TripMember> findMyTripByStatus(@Param("member") Member member, @Param("status") Status status);
+    @Query("SELECT tm FROM TripMember tm WHERE tm.member = :member AND tm.trip.tripStatus = :status")
+    List<TripMember> findMyTripByStatus(Member member, Status status);
+
 }
