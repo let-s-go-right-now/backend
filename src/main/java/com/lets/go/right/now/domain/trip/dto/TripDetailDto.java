@@ -23,6 +23,7 @@ public class TripDetailDto {
     @Data
     @Builder
     public static class ExpenseResDto {
+        private Long id;
         private String expenseName;
         private Integer price;
         private LocalDateTime expenseDate;

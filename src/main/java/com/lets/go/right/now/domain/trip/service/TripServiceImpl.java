@@ -161,6 +161,7 @@ public class TripServiceImpl implements TripService {
         // 여행의 모든 지출 정보 가져오기
         List<TripDetailDto.ExpenseResDto> expenseDtos = trip.getExpenses().stream()
                 .map(expense -> TripDetailDto.ExpenseResDto.builder()
+                        .id(expense.getId())
                         .expenseName(expense.getExpenseName())  // 지출 이름
                         .price(expense.getPrice())              // 지출 금액
                         .expenseDate(expense.getExpenseDate())  // 지출 날짜
