@@ -105,7 +105,7 @@ public class TripServiceImpl implements TripService {
         Member member = memberRepository.getMemberByEmail(email);
 
         // 2. 상태에 맞는 여행 조회
-        List<TripMember> tripMembers = tripMemberRepository.findMyTripByStatus(member, Status.DONE);
+        List<TripMember> tripMembers = tripMemberRepository.findMyTripEndedOrPastTrips(member, Status.DONE);
         List<Trip> trips = tripMembers.stream().map(TripMember::getTrip).toList();
 
         ArrayList<TripListDto> resultDtoList = new ArrayList<>();
@@ -337,23 +337,23 @@ public class TripServiceImpl implements TripService {
         Member member = memberRepository.getMemberByEmail(email);
         // 여행 조회
         Trip trip = tripRepository.getTripById(tripId);
-        
+
         // 여행 방장만 여행을 종료할 수 있음
         if (!trip.getOwner().equals(member)) {
             throw new GeneralException(ErrorStatus._NOT_TRIP_OWNER);
         }
-        
+
         // 여행이 이미 종료되었는지 확인
         if (trip.isTripEnded()) {
             throw new GeneralException(ErrorStatus._TRIP_ALREADY_ENDED);
         }
-        
+
         // 여행 종료
         trip.endTrip();
-        
+
         // 데이터베이스에 변경사항 저장
         tripRepository.save(trip);
-        
+
         return ResponseEntity.ok(ApiResponse.onSuccess("여행이 종료되었습니다."));
     }
 

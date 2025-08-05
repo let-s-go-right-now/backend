@@ -32,4 +32,12 @@ public interface TripMemberRepository extends JpaRepository<TripMember, Long> {
     @Query("SELECT tm FROM TripMember tm WHERE tm.member = :member AND tm.trip.tripStatus = :status")
     List<TripMember> findMyTripByStatus(Member member, Status status);
 
+    //완료된 여행
+    @Query("""
+    SELECT tm FROM TripMember tm 
+    WHERE tm.member = :member 
+      AND (tm.trip.tripStatus = :doneStatus OR tm.trip.endDate < CURRENT_DATE)
+""")
+    List<TripMember> findMyTripEndedOrPastTrips(@Param("member") Member member, @Param("doneStatus") Status doneStatus);
+
 }
