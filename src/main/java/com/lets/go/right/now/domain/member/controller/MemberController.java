@@ -41,8 +41,8 @@ public class MemberController {
      * 계좌 번호 요청
      */
     @GetMapping("/account-number")
-    public ResponseEntity<?> getAccountNumber(@RequestBody AccountReq accountReq) {
-        return memberService.getAccountNumber(accountReq);
+    public ResponseEntity<?> getAccountNumber(@RequestParam String userEmail) {
+        return memberService.getAccountNumber(userEmail);
     }
 
     // 로그 아웃

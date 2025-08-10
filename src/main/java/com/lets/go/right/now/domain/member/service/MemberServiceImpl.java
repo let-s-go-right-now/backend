@@ -75,8 +75,8 @@ public class MemberServiceImpl implements MemberService{
      * 계좌 번호 얻어 오기
      */
     @Override
-    public ResponseEntity<?> getAccountNumber(AccountReq accountReq) {
-        Member member = memberRepository.getMemberByEmail(accountReq.userEmail());
+    public ResponseEntity<?> getAccountNumber(String userEmail) {
+        Member member = memberRepository.getMemberByEmail(userEmail);
         return ResponseEntity.ok(ApiResponse.onSuccess(member.getAccountNumber()));
     }
 
