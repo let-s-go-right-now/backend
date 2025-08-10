@@ -18,6 +18,7 @@ public class TripDetailDto {
     private Long ownerId;
     private List<TripMemberListRes.MemberResDto> members;
     private int totalExpense;
+    private Long userId;
     private List<ExpenseResDto> expenses;
 
     @Data

@@ -65,8 +65,10 @@ public class TripController {
     // 특정 여행 상세 조회 (이전 여행, 진행 중인 여행 모두 해당)
     @GetMapping("/{trip_id}")
     public ResponseEntity<?> getTripDetail(
-            @PathVariable("trip_id") Long tripId) {
-        return tripService.getTripDetail(tripId);
+            @PathVariable("trip_id") Long tripId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        Long userId = userDetails.getId();
+        return tripService.getTripDetail(tripId, userId);
     }
 
     // 멤버 내보내기 (방장만 가능)

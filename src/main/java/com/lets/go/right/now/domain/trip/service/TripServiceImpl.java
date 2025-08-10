@@ -142,7 +142,7 @@ public class TripServiceImpl implements TripService {
     // 특정 여행 상세 조회 (이전 여행, 진행 중인 여행 모두 해당)
     @Transactional(readOnly = true)
     @Override
-    public ResponseEntity<?> getTripDetail(Long tripId) {
+    public ResponseEntity<?> getTripDetail(Long tripId, Long userId) {
 
         // 여행 정보 조회
         Trip trip = tripRepository.getTripById(tripId);
@@ -184,6 +184,7 @@ public class TripServiceImpl implements TripService {
                                     .members(memberDtos)               // 여행 멤버 리스트
                                     .totalExpense(totalExpense)        // 총 지출 금액
                                     .expenses(expenseDtos)             // 지출 내역
+                                    .userId(userId)
                                     .build();
 
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.onSuccess(response));

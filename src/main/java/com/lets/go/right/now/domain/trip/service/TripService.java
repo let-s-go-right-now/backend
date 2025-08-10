@@ -15,7 +15,7 @@ public interface TripService {
     // 이전 여행 목록 조회
     ResponseEntity<?> getEndedTrips(String email);
     // 특정 여행 목록 조회
-    ResponseEntity<?> getTripDetail(Long tripId);
+    ResponseEntity<?> getTripDetail(Long tripId, Long userId);
     // 멤버 내보내기 (방장만 가능)
     ResponseEntity<?> deleteTripMember(Long tripId, Long targetMemberId, String email);
     // 여행 참여자 정보 조회
@@ -26,7 +26,7 @@ public interface TripService {
     ResponseEntity<?> getTripExpenses(Long tripId, int page, int size, SortOption option);
     // 특정 여행 관리 페이지 조회
     ResponseEntity<?> getTripInfo(Long tripId);
-    
+
     // 여행 종료하기
     ResponseEntity<?> endTrip(String email, Long tripId);
 }
