@@ -10,7 +10,7 @@ public interface MemberService {
     ResponseEntity<?> login(LoinReq dto);
     ResponseEntity<?> join(JoinReq joinReq, MultipartFile image) throws IOException;
 
-    ResponseEntity<?> getAccountNumber(AccountReq accountReq);
+    ResponseEntity<?> getAccountNumber(String email);
 
     ResponseEntity<?> deleteMember(String email);
 
