@@ -6,13 +6,7 @@ import com.lets.go.right.now.global.jwt.dto.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("api/settlement")
@@ -66,5 +60,12 @@ public class SettlementController {
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
             @PathVariable("trip_id") Long tripId) {
         return settlementService.getTravelSettlementStatus(customUserDetails.getEmail(), tripId);
+    }
+
+    @PostMapping("/send-settlement/{travel_settlement_id}")
+    public ResponseEntity<?> sendSettlement(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
+            @PathVariable("travel_settlement_id") Long travelSettlementId) {
+        return settlementService.sendTravelSettlementAndCheckDone(customUserDetails.getEmail(), travelSettlementId);
     }
 }
