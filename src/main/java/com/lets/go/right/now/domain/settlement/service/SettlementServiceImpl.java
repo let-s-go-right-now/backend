@@ -236,4 +236,45 @@ public class SettlementServiceImpl implements SettlementService {
                 .toList();
         return ResponseEntity.ok(ApiResponse.onSuccess(responseList));
     }
+
+    @Transactional
+    @Override
+    public ResponseEntity<?> sendTravelSettlementAndCheckDone(String email, Long travelSettlementId) {
+        // 1. travelSettlement 조회
+        TravelSettlement travelSettlement = travelSettlementRepository.findById(travelSettlementId)
+                .orElseThrow(() -> new GeneralException(ErrorStatus._TRAVEL_SETTLEMENT_NOT_FOUND));
+
+        // 2. 해당 travelSettlement 상태 DONE으로 변경 (송금 완료 처리)
+        travelSettlement.changeStatus(Status.DONE);
+
+        // 3. 해당 여행(trip)과 현재 회원(email) 조회
+        Trip trip = travelSettlement.getTrip();
+        Member member = memberRepository.getMemberByEmail(email);
+
+        // 4. 해당 회원과 엮인 모든 travelSettlement 중 아직 DONE 아닌 게 있는지 체크
+        //    단, sender == receiver 인 경우는 제외
+        boolean hasPending = travelSettlementRepository
+                .findByTripAndMemberInvolved(trip, member).stream()
+                // 본인 부담금(sender == receiver) 제외 : ID로 비교
+                .filter(ts -> !ts.getSender().getId().equals(ts.getReceiver().getId()))
+                // 아직 DONE 아닌 내역이 있는지 확인
+                .anyMatch(ts -> ts.getSettlementStatus() != Status.DONE);
+
+
+        // 5. 남아있는 게 없으면 TripMember 정산 상태 DONE으로 변경
+        if (!hasPending) {
+            TripMember tripMember = tripMemberRepository.getByTripAndMember(trip, member);
+            tripMember.changeStatus(Status.DONE);
+        }
+
+        // 6. 현재 회원의 최종 정산 상태 조회 (DB에서 직접 조회)
+        Status currentSettlementStatus = tripMemberRepository.findSettlementStatusByTripAndMember(trip, member);
+
+        // 8. DTO에 담아 반환
+        SettlementStatusRes response = new SettlementStatusRes(currentSettlementStatus.name());
+
+        return ResponseEntity.ok(ApiResponse.onSuccess(response));
+
+    }
+
 }

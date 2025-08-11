@@ -5,11 +5,12 @@ import com.lets.go.right.now.domain.settlement.entity.TravelSettlement;
 import com.lets.go.right.now.domain.trip.entity.Trip;
 import com.lets.go.right.now.global.enums.statuscode.ErrorStatus;
 import com.lets.go.right.now.global.exception.GeneralException;
-import java.util.List;
-import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import java.util.List;
+import java.util.Optional;
 
 public interface TravelSettlementRepository extends JpaRepository<TravelSettlement,Long> {
     @Query("SELECT ts FROM TravelSettlement ts "
@@ -34,4 +35,11 @@ public interface TravelSettlementRepository extends JpaRepository<TravelSettleme
 
     @Query("SELECT ts FROM TravelSettlement ts WHERE ts.sender != ts.receiver")
     List<TravelSettlement> findMemberTravelSettlementByTrip(Trip trip);
+
+    @Query("SELECT ts FROM TravelSettlement ts " +
+            "WHERE ts.trip = :trip " +
+            "AND (ts.sender = :member OR ts.receiver = :member)")
+    List<TravelSettlement> findByTripAndMemberInvolved(@Param("trip") Trip trip,
+                                                       @Param("member") Member member);
+
 }
